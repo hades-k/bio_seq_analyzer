@@ -11,9 +11,16 @@ class Tool(ABC):
 
 class Parser (Tool):
     def __init__(self, format="fasta"):
+        '''
+        :param format: fasta format for now, can be anything SeqIO supports
+        '''
         self.format = format
 
     def run(self, file_path):
+        '''
+        :param file_path: path to the file to parse
+        :return: a pandas DataFrame
+        '''
         self.file_path = file_path
         try:
             with open(self.file_path) as f:
@@ -56,6 +63,12 @@ class Parser (Tool):
 
 class SequenceAligner(Tool):
     def __init__(self, match=2, mismatch=-1, gap=-2, show_matrix: bool = False):
+        '''
+        :param match: score for match
+        :param mismatch: score for mismatch
+        :param gap: score for gap
+        :param show_matrix: boolean, do we want to print the score matrix
+        '''
         self.match = match
         self.mismatch = mismatch
         self.gap = gap
@@ -63,6 +76,11 @@ class SequenceAligner(Tool):
         self.result = {}
 
     def run(self, seq1, seq2, method='global'):
+        '''
+        :param seq1: sequence to align
+        :param seq2: sequence to align
+        :param method: global or local alignment, default is global
+        '''
         if method == 'global':
             self._global_align(seq1, seq2)
         elif method == 'local':
@@ -75,6 +93,20 @@ class SequenceAligner(Tool):
             print("\t".join(str(cell) for cell in row))
 
     def _global_align(self, seq1, seq2):
+        '''
+        :param seq1: sequence to align
+        :param seq2: sequence to align
+        Updates:
+        self.result (dict): Dictionary containing:
+            - 'type': Alignment type ("global")
+            - 'score': Final alignment score
+            - 'aligned_seq1': Aligned version of sequence 1 (with gaps)
+            - 'aligned_seq2': Aligned version of sequence 2 (with gaps)
+            - 'matches': List of match/mismatch indicators ('|' or ' ')
+            - 'match_count': Number of exact matches
+            - 'mismatch_count': Number of mismatches
+            - 'gap_count': Number of gaps introduced in either sequence
+        '''
         rows, cols = len(seq1) + 1, len(seq2) + 1
         score_matrix = np.zeros((rows, cols), dtype=int)
 
@@ -106,6 +138,20 @@ class SequenceAligner(Tool):
         }
 
     def _local_align(self, seq1, seq2):
+        '''
+        :param seq1: sequence to align
+        :param seq2: sequence to align
+        Updates:
+        self.result (dict): Dictionary containing:
+            - 'type': Alignment type ("global")
+            - 'score': Final alignment score
+            - 'aligned_seq1': Aligned version of sequence 1 (with gaps)
+            - 'aligned_seq2': Aligned version of sequence 2 (with gaps)
+            - 'matches': List of match/mismatch indicators ('|' or ' ')
+            - 'match_count': Number of exact matches
+            - 'mismatch_count': Number of mismatches
+            - 'gap_count': Number of gaps introduced in either sequence
+        '''
         rows, cols = len(seq1) + 1, len(seq2) + 1
         score_matrix = np.zeros((rows, cols), dtype=int)
 
@@ -140,6 +186,13 @@ class SequenceAligner(Tool):
         }
 
     def _traceback(self, seq1, seq2, score_matrix, max_pos=None, method="global"):
+        '''Trace back through the score matrix to reconstruct the optimal alignment.
+        :param seq1: sequence 1
+        :param seq2: sequence 2
+        :param score_matrix: score matrix from the alignment
+        :param max_pos: the maximum position of the local alignment
+        :param method: global or local alignment, default is global
+        '''
         aligned_seq1, aligned_seq2, matches = [], [], []
         match_count = mismatch_count = gap_count = 0  # Initialize counts
         if method == "global":
@@ -197,6 +250,10 @@ class SequenceAligner(Tool):
         return aligned_seq1, aligned_seq2, matches, match_count, mismatch_count, gap_count
 
     def report(self, width=50, print_alignment=True):
+        '''Graphical report the alignment score matrix to the given width.
+        :param width: the width of the alignment score matrix
+        :param print_alignment: boolean, print the graphical representation of the alignment
+        '''
         if not self.result:
             print("No alignment has been run.")
             return
@@ -219,6 +276,9 @@ class SequenceAligner(Tool):
                 print()
 
     def get_alignment_data(self):
+        '''
+        :return: dictionary of the entire alignment data
+        '''
         if not self.result:
             raise ValueError("No alignment has been run.")
         return self.result
@@ -226,10 +286,17 @@ class SequenceAligner(Tool):
 
 class MotifFinder(Tool):
     def __init__(self, motif: str):
+        '''
+        :param motif: the motif to use
+        '''
         self._motif = motif.upper()
         self.__last_result = None
 
     def run(self, sequence: str):
+        '''
+        :param sequence: the sequence to analyze
+        :return: the motif of interest, count of occurrences, and positions of the start of occurences in the sequence
+        '''
         sequence = sequence.upper()
         positions = self._find_motif_occurrences(sequence)
         self.__last_result = {
@@ -248,11 +315,17 @@ class MotifFinder(Tool):
         return positions
 
     def get_result(self):
+        '''
+        :return: the dictionary of the motif finder data
+        '''
         if not self.__last_result:
             return {"error": "No motif search has been run yet."}
         return self.__last_result
 
     def report(self):
+        '''
+        :return: the 'verbose' report of the motif finder
+        '''
         if not self.__last_result:
             print("No motif search has been run yet.")
             return

@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 
 class Sequence(ABC):
     def __init__(self, df):
+        '''
+        :param df: pandas dataframe from Parser output
+        '''
         self.__info = df
 
     @property
