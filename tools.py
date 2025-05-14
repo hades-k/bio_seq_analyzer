@@ -2,12 +2,22 @@ from abc import ABC, abstractmethod
 import numpy as np
 import pandas as pd
 from Bio import SeqIO
+from collections import Counter
 
 class Tool(ABC):
     @abstractmethod
     def run(self, *args, **kwargs):
+        '''
+        abstract method for running the tool
+        '''
         pass
 
+    @abstractmethod
+    def report(self, *args, **kwargs):
+        '''
+        abstract method for graphical representation
+        '''
+        pass
 
 class Parser (Tool):
     def __init__(self, format="fasta"):
@@ -15,26 +25,29 @@ class Parser (Tool):
         :param format: fasta format for now, can be anything SeqIO supports
         '''
         self.format = format
+        self.__data = {}
+        self._df = pd.DataFrame()
+        self.__records = None
 
     def run(self, file_path):
         '''
         :param file_path: path to the file to parse
         :return: a pandas DataFrame
         '''
-        self.file_path = file_path
+        self._file_path = file_path
         try:
-            with open(self.file_path) as f:
+            with open(self._file_path) as f:
                 pass
         except FileNotFoundError:
-            raise FileNotFoundError(f"File not found: {self.file_path}")
+            raise FileNotFoundError(f"File not found: {self._file_path}")
 
         self.__data = {}
         self._df = pd.DataFrame()
 
-        self.__records = list(SeqIO.parse(self.file_path, self.format))
+        self.__records = list(SeqIO.parse(self._file_path, self.format))
 
         if not self.__records:
-            raise ValueError(f"No valid records found in file: {self.file_path}")
+            raise ValueError(f"No valid records found in file: {self._file_path}")
         for record in self.__records:
             for key, value in record.__dict__.items():
                 if key not in self.__data:
@@ -44,21 +57,27 @@ class Parser (Tool):
                 self.__data[key].append(value)
 
         for key, values in self.__data.items():
-            if values and len(values) == len(self.__records):
-                self._df[key.strip('_')] = values
+            self._df[key.strip('_')] = values
 
         if 'seq' in self._df.columns:
             self._df['length'] = self._df['seq'].str.len()
+
         return self._df
 
     def save_to_csv(self, output_path=None):
         if output_path is None:
-            output_path = self.file_path.rsplit('.', 1)[0] + '.csv'
+            output_path = self._file_path.rsplit('.', 1)[0] + '.csv'
         try:
             self._df.to_csv(output_path, index=False)
-            print(f"Successfully saved records to {output_path}")
+            print(f"Successfully saved records to {output_path} \n")
         except Exception as e:
-            print(f"Error saving CSV file: {str(e)}, run parser method first")
+            print(f"Error saving CSV file: {str(e)}, run parser method first \n")
+
+    def report(self, print_header: bool = True):
+        print(f'Successfully parsed {self._file_path}')
+        print(f'Found {len(self._df)} records \n')
+        if print_header:
+            print(f'{self._df.head()} \n')
 
 
 class SequenceAligner(Tool):
@@ -250,8 +269,8 @@ class SequenceAligner(Tool):
         return aligned_seq1, aligned_seq2, matches, match_count, mismatch_count, gap_count
 
     def report(self, width=50, print_alignment=True):
-        '''Graphical report the alignment score matrix to the given width.
-        :param width: the width of the alignment score matrix
+        '''Graphical report of the statistics and the alignment to the given width.
+        :param width: the width of the alignment
         :param print_alignment: boolean, print the graphical representation of the alignment
         '''
         if not self.result:
@@ -285,54 +304,78 @@ class SequenceAligner(Tool):
 
 
 class MotifFinder(Tool):
-    def __init__(self, motif: str):
-        '''
-        :param motif: the motif to use
-        '''
-        self._motif = motif.upper()
-        self.__last_result = None
+    def __init__(self):
+        self.__last_result = {}
+        self.__discovered = False
 
-    def run(self, sequence: str):
+    def run(self, sequence: str, motif: str = None, k:int =5, threshold:int = 2):
         '''
         :param sequence: the sequence to analyze
-        :return: the motif of interest, count of occurrences, and positions of the start of occurences in the sequence
+        :param motif: motif to find in the target sequence, can be None
+        :param k: length of k-mers to find if discovering new motifs
+        :param threshold: threshold for finding new motifs
+        :return: dict
         '''
+        if not sequence:
+            return {'error': 'No sequence provided.'}
         sequence = sequence.upper()
-        positions = self._find_motif_occurrences(sequence)
-        self.__last_result = {
-            "motif": self._motif,
-            "count": len(positions),
-            "positions": positions
-        }
+        if not motif:
+            self.__last_result = self._discover_motifs(sequence, k=k, threshold=threshold)
+            self.__discovered = True
+            if not self.__last_result:
+                print("No motif found.")
+        else:
+            positions = self._find_motif_occurrences(sequence, motif)
+            self.__last_result = {
+                "motif": motif,
+                "count": len(positions),
+                "positions": positions
+            }
         return self.__last_result
 
-    def _find_motif_occurrences(self, sequence: str):
+    def _find_motif_occurrences(self, sequence: str, motif):
         positions = []
-        motif_len = len(self._motif)
+        motif_len = len(motif)
         for i in range(len(sequence) - motif_len + 1):
-            if sequence[i:i + motif_len] == self._motif:
+            if sequence[i:i + motif_len] == motif:
                 positions.append(i)
         return positions
 
+    def _discover_motifs(self, sequence, k: int, threshold: int = 2):
+        '''
+        Find frequent k-mers across sequences
+        :param sequence: the target sequence
+        :param k: the length of the k-mers
+        :param threshold: the minimum number of occurrences
+        :return: list of common motifs found
+        '''
+        kmer_counts = Counter()
+        seq = sequence.upper()
+        for i in range(len(seq) - k + 1):
+            kmer = seq[i:i + k]
+            kmer_counts[kmer] += 1
+        found = {motif:count for motif, count in kmer_counts.items() if count >= threshold}
+        return found
+
     def get_result(self):
-        '''
-        :return: the dictionary of the motif finder data
-        '''
         if not self.__last_result:
             return {"error": "No motif search has been run yet."}
         return self.__last_result
 
     def report(self):
-        '''
-        :return: the 'verbose' report of the motif finder
-        '''
         if not self.__last_result:
             print("No motif search has been run yet.")
             return
-        print(f"Motif: {self.__last_result['motif']}")
-        print(f"Count: {self.__last_result['count']}")
-        print(f"Positions: {', '.join(map(str, self.__last_result['positions']))}")
-
+        if self.__discovered:
+            print(f'Discovered the following motifs:')
+            for motif, count in self.__last_result.items():
+                print(f'\t{motif}: {count}')
+            print()
+        else:
+            print(f"Motif: {self.__last_result['motif']}")
+            print(f"Count: {self.__last_result['count']}")
+            print(f"Positions: {', '.join(map(str, self.__last_result['positions']))}")
+            print()
 
 
 if __name__ == '__main__':
@@ -340,6 +383,8 @@ if __name__ == '__main__':
 
     parser = Parser('fasta')
     records = parser.run("synthetic_mtDNA_dataset.fasta")
+    parser.save_to_csv()
+    parser.report()
     NC10seq = MitochondrialDNA(records.loc[10]).sequence
     NC11seq = MitochondrialDNA(records.loc[11]).sequence
 
@@ -350,7 +395,8 @@ if __name__ == '__main__':
     aligner.run(NC10seq, NC11seq, method="local")
     aligner.report(print_alignment=False)
 
-    motif = MotifFinder("GATC")
-    motif.run(NC10seq)
-    motif.report()
-    #print(motif.get_result())
+    finder = MotifFinder()
+    finder.run(NC10seq, 'GATC')
+    finder.report()
+    finder.run(NC10seq, threshold=7, k=4)
+    finder.report()
