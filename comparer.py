@@ -1,4 +1,48 @@
 # part3 
+"""
+MITOCHONDRIAL GENOME ANALYSIS MODULE
+
+This module provides high-level analytical tools for working with mitochondrial DNA sequences.
+It includes classes for:
+
+- Sequence alignment and comparison
+- Visualization of alignment results
+- Motif discovery and conserved motif detection
+- Pairwise and reference-based comparison
+
+HOW TO USE:
+1. Parse your dataset using the Parser class from tools.py:
+
+    from tools import Parser
+    parser = Parser()
+    df = parser.run("synthetic_mtDNA_dataset.fasta")
+
+2. Convert rows of the DataFrame into MitochondrialDNA objects:
+
+    from sequence import MitochondrialDNA
+    mito_seqs = [MitochondrialDNA(df.loc[i]) for i in range(3)]
+
+3. Run comparison:
+
+    comparer = SequenceComparer(mito_seqs)
+    results = comparer.compare_all()
+
+4. Visualize an alignment:
+
+    visualizer = AlignmentVisualizer(comparer.wrapper)
+    visualizer.display(0, 1, mito_seqs)
+
+5. Compare to a reference (e.g. Homo sapiens):
+   First, find the index using df.head() or a helper function, then:
+
+    comparer.compare_to_reference(ref_index=0)
+
+6. Find conserved motifs:
+
+    motif_tool = ConservedMotifAnalyzer(mito_seqs)
+    conserved = motif_tool.find_conserved(k=5, threshold=2)
+    print(conserved)
+"""
 from sequence import MitochondrialDNA
 from tools import SequenceAligner, MotifFinder
 from typing import List
@@ -115,29 +159,3 @@ class MultiAligner:
     def report_alignment(self, idx1: int, idx2: int, method='global'):
         self.wrapper.align(self.sequences[idx1].sequence, self.sequences[idx2].sequence, method)
         self.wrapper.report()
-
-
-# test usage
-if __name__ == "__main__":
-    from tools import Parser
-
-    parser = Parser()
-    df = parser.run("synthetic_mtDNA_dataset.fasta.txt")
-    mito_seqs = [MitochondrialDNA(df.loc[i]) for i in range(3)]  # using first 3 sequences
-
-    comparer = SequenceComparer(mito_seqs)
-    visualizer = AlignmentVisualizer(comparer.wrapper)
-
-    print("Pairwise Comparison Result (0 vs 1):")
-    print(comparer.compare_pair(0, 1))
-
-    print("\nAll Pairwise Comparisons:")
-    for result in comparer.compare_all():
-        print(result)
-
-    print("\nComparison to Reference (index 0):")
-    for result in comparer.compare_to_reference(ref_index=0):
-        print(result)
-
-    print("\nVisualizing alignment between 0 and 1:")
-    visualizer.display(0, 1, mito_seqs, method='global', width=60)
