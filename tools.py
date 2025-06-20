@@ -391,7 +391,6 @@ if __name__ == '__main__':
     aligner = SequenceAligner()
     aligner.run(NC10seq, NC11seq)
     aligner.report(print_alignment=False)
-    #print (aligner.get_alignment_data())
     aligner.run(NC10seq, NC11seq, method="local")
     aligner.report(print_alignment=False)
 
