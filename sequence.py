@@ -20,11 +20,11 @@ class Sequence(ABC):
 class MitochondrialDNA(Sequence):
     def __init__(self, df):
         super().__init__(df)
-        self.__sequence = df['seq']
-        self.__length = df['length']
-        self.__id = df['id']
-        self.__name = df['name']
-        self.__description = df['description']
+        self.__sequence = str(df['seq'])
+        self.__length = int(df['length'])
+        self.__id = str(df['id'])
+        self.__name = str(df['name'])
+        self.__description = str(df['description'])
 
     @property
     def sequence(self):

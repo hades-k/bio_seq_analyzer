@@ -129,8 +129,9 @@ class ConservedMotifAnalyzer:
             for motif in result:
                 motif_counts[motif] = motif_counts.get(motif, 0) + 1
 
+        # Only motifs present in all sequences and above threshold in each
         conserved = {m: c for m, c in motif_counts.items() if c == len(self.sequences)}
-        return conserved
+        return conserved, motif_counts
 
     def motif_occurrences(self, motif: str):
         positions = {}
