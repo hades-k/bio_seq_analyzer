@@ -29,7 +29,7 @@ This document provides a detailed overview of the classes and methods used in th
 - Identify irregular bases
 
 **Collaborators:**
-- `Sequence` (inherits from)
+- `Sequence` (superclass)
 - `Parser` (instantiated from data parsed by)
 - `FastaManager` (manages collections of)
 
@@ -61,15 +61,38 @@ This document provides a detailed overview of the classes and methods used in th
 
 - `FastaManager` (delegates parsing to Parser)
 - `MitochondrialDNA` (instantiated from parsed records)
+- `Tool` (superclass)
 
 ----
 
 **Class:** `SequenceAligner`
 
 **Responsibilities:**
-- 
+- Align two biological sequences using Needleman-Wunsch (global) or Smith-Waterman (local) algorithms 
+- Calculate the alignment score
+- Calculate the number of matches/mismatches
+- Optionally print the alignment score matrix
+- Provide graphical representation of the alignment
 
 **Collaborators:**
+- `MitochondrialDNA` (input type)
+- `Tool` (superclass)
+- `SequenceAlignWrapper` (delegates alignment tasks)
+
+----
+
+**Class:** `MotifFinder`
+
+**Responsibilities:**
+- Search for a given motif in a DNA sequence and return its positions
+- Discover overrepresented k-mers (motifs) in a sequence above a frequency threshold
+- Return and report the last search result (motif matches or discovered motifs)
+
+**Collaborators:**
+- `Tool` (Superclass)
+- `MitochondrialDNA` (provides input sequences)
+- `ConservedMotifAnalyzer` (uses MotifFinder for motif discovery across multiple sequences)
+
 
 ----
 
