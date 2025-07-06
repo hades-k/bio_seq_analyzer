@@ -1,38 +1,60 @@
-<!DOCTYPE html>
+from flask import Flask, render_template_string
+
+app=Flask(__name__)
+
+#Template Strings
+base_html_py="""<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Summary - BioSeq Analyzer</title>
+  <meta charset="utf-8">
+  <title>mtDNA Analyzer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Summary Statistics</h1>
-    <a href="/">&larr; Back to Upload</a>
-    <h2>Sequence Stats</h2>
-    <ul>
-        <li>Total Sequences: {{ stats.count }}</li>
-        <li>Min Length: {{ stats.min_length }}</li>
-        <li>Max Length: {{ stats.max_length }}</li>
-        <li>Mean Length: {{ stats.mean_length|round(2) }}</li>
-    </ul>
-    <h2>GC Content</h2>
-    <table border="1">
-        <tr><th>Name</th><th>GC Content (%)</th></tr>
-        {% for name in names %}
-        <tr>
-            <td>{{ name }}</td>
-            <td>
-                {% if gc_contents[loop.index0] is not none and gc_contents[loop.index0] != undefined %}
-                    {{ gc_contents[loop.index0]|round(2) }}
-                {% else %}
-                    N/A
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-    <h3>GC Content Distribution</h3>
-    <img src="{{ url_for('gc_graph') }}" alt="GC Content Distribution">
-    <br>
-    <a href="/motif">Motif Analysis</a> | <a href="/align">Pairwise Alignment</a>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">mtDNA Analyzer</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/summary">Summary</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    {{ content|safe }}
+  </div>
 </body>
-</html> 
+</html>"""
+
+summary_html_py="""<h2>Dataset Summary</h2>
+<ul class="list-group mb-4">
+  <li class="list-group-item">Total Sequences: {{ stats.count }}</li>
+  <li class="list-group-item">Min Length: {{ stats.min_length }}</li>
+  <li class="list-group-item">Max Length: {{ stats.max_length }}</li>
+  <li class="list-group-item">Mean Length: {{ stats.mean_length | round(2) }}</li>
+</ul>
+<h3>GC Content (%)</h3>
+<table class="table table-striped">
+  <thead><tr><th>Species</th><th>GC Content</th></tr></thead>
+  <tbody>
+    {% for name, gc in zip(names, gc_contents) %}
+      <tr><td>{{ name }}</td><td>{{ gc | round(2) }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>"""
+
+# Dummy Dataa
+dummy_stats={'count': 5, 'min_length': 800, 'max_length': 1400, 'mean_length': 1023.6}
+dummy_names=['Species 1', 'Species 2', 'Species 3', 'Species 4', 'Species 5']
+dummy_gc=[42.1, 43.2, 41.8, 44.5, 45.1]
+
+@app.route("/summary")
+def summary():
+    return render_template_string(
+        base_html_py,
+        content=render_template_string(summary_html_py, stats=dummy_stats, names=dummy_names, gc_contents=dummy_gc)
+    )
+
+if __name__=="__main__":
+    app.run(debug=True)
