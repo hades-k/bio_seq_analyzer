@@ -278,48 +278,6 @@ def heatmap_png():
         return "", 400
 
     try:
-        # Limit for speed (you can increase this later)
-        max_seqs = min(10, len(sequences))
-        sequences = sequences[:max_seqs]
-        names = names[:max_seqs]
-
-        aligner = MultiAligner(sequences)
-        score_map = aligner.pairwise_scores()
-
-        n = len(sequences)
-        matrix = np.zeros((n, n))
-        for (i, j), score in score_map.items():
-            matrix[i][j] = score
-            matrix[j][i] = score
-
-        fig, ax = plt.subplots(figsize=(10, 8))
-        im = ax.imshow(matrix, cmap='Blues')
-        ax.set_xticks(np.arange(n))
-        ax.set_yticks(np.arange(n))
-        ax.set_xticklabels(names, rotation=90)
-        ax.set_yticklabels(names)
-        fig.colorbar(im, ax=ax, label='Alignment Score')
-        plt.tight_layout()
-
-        img = io.BytesIO()
-        fig.savefig(img, format='png')
-        img.seek(0)
-        print("Heatmap image ready.")
-        return send_file(img, mimetype='image/png')
-    except Exception as e:
-        print(f"Heatmap generation failed: {e}")
-        return "", 500@app.route('/heatmap.png')
-def heatmap_png():
-    print("Starting heatmap generation...")
-    sequences = fasta_manager.get_sequences()
-    names = fasta_manager.get_names()
-
-    if not sequences or len(sequences) < 2:
-        print("Not enough sequences to generate heatmap.")
-        return "", 400
-
-    try:
-        # Limit for speed (you can increase this later)
         max_seqs = min(10, len(sequences))
         sequences = sequences[:max_seqs]
         names = names[:max_seqs]
@@ -350,6 +308,3 @@ def heatmap_png():
     except Exception as e:
         print(f"Heatmap generation failed: {e}")
         return "", 500
-
-if __name__ == '__main__':
-    app.run(debug=True)
