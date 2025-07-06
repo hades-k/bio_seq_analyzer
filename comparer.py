@@ -1,52 +1,7 @@
-# part3 
-"""
-MITOCHONDRIAL GENOME ANALYSIS MODULE
-
-This module provides high-level analytical tools for working with mitochondrial DNA sequences.
-It includes classes for:
-
-- Sequence alignment and comparison
-- Visualization of alignment results
-- Motif discovery and conserved motif detection
-- Pairwise and reference-based comparison
-
-HOW TO USE:
-1. Parse your dataset using the Parser class from tools.py:
-
-    from tools import Parser
-    parser = Parser()
-    df = parser.run("synthetic_mtDNA_dataset.fasta")
-
-2. Convert rows of the DataFrame into MitochondrialDNA objects:
-
-    from sequence import MitochondrialDNA
-    mito_seqs = [MitochondrialDNA(df.loc[i]) for i in range(3)]
-
-3. Run comparison:
-
-    comparer = SequenceComparer(mito_seqs)
-    results = comparer.compare_all()
-
-4. Visualize an alignment:
-
-    visualizer = AlignmentVisualizer(comparer.wrapper)
-    visualizer.display(0, 1, mito_seqs)
-
-5. Compare to a reference (e.g. Homo sapiens):
-   First, find the index using df.head() or a helper function, then:
-
-    comparer.compare_to_reference(ref_index=0)
-
-6. Find conserved motifs:
-
-    motif_tool = ConservedMotifAnalyzer(mito_seqs)
-    conserved = motif_tool.find_conserved(k=5, threshold=2)
-    print(conserved)
-"""
 from sequence import MitochondrialDNA
 from tools import SequenceAligner, MotifFinder
 from typing import List
-
+from concurrent.futures import ThreadPoolExecutor
 
 class SequenceAlignWrapper:
     def __init__(self):
@@ -142,21 +97,30 @@ class ConservedMotifAnalyzer:
 
 
 class MultiAligner:
-    def __init__(self, sequences: List[MitochondrialDNA]):
-        self.sequences = sequences
-        self.wrapper = SequenceAlignWrapper()
+    def __init__(self, mito_objs):
+        self.mito_objs = mito_objs
+        self.names = [m._MitochondrialDNA__name for m in mito_objs]
 
-    def pairwise_scores(self, method='global'):
+    def _align_pair(self, i, j):
+        aligner = SequenceAligner()
+        s1 = self.mito_objs[i].sequence
+        s2 = self.mito_objs[j].sequence
+        aligner.run(s1, s2)
+        return ((i, j), aligner.score)
+
+    def pairwise_scores(self):
+        n = len(self.mito_objs)
+        pairs = [(i, j) for i in range(n) for j in range(i+1, n)]
         score_map = {}
-        for i in range(len(self.sequences)):
-            for j in range(i + 1, len(self.sequences)):
-                result = self.wrapper.align(self.sequences[i].sequence, self.sequences[j].sequence, method)
-                score_map[(i, j)] = result['score']
+
+        print(f"Starting pairwise alignment for {len(pairs)} pairs...")
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            results = executor.map(lambda pair: self._align_pair(*pair), pairs)
+
+            for (i, j), score in results:
+                score_map[(i, j)] = score
+                score_map[(j, i)] = score  # symmetric
+
+        print("Pairwise alignment complete.")
         return score_map
-
-    def align_pair(self, idx1: int, idx2: int, method='global'):
-        return self.wrapper.align(self.sequences[idx1].sequence, self.sequences[idx2].sequence, method)
-
-    def report_alignment(self, idx1: int, idx2: int, method='global'):
-        self.wrapper.align(self.sequences[idx1].sequence, self.sequences[idx2].sequence, method)
-        self.wrapper.report()
