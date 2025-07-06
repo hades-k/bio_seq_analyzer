@@ -1,10 +1,12 @@
 from flask import Flask, render_template_string, request, redirect, url_for, flash
+import os
+from tools import Parser, SequenceAligner, MotifFinder
+from sequence import MitochondrialDNA
 
 app = Flask(__name__)
 app.secret_key = 'bioseq2024'
 
-# --- Template Strings ---
-base_html_py="""<!doctype html>
+base_html_py = """<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -18,6 +20,8 @@ base_html_py="""<!doctype html>
       <div class="collapse navbar-collapse">
         <ul class="navbar-nav">
           <li class="nav-item"><a class="nav-link" href="/summary">Summary</a></li>
+          <li class="nav-item"><a class="nav-link" href="/motif">Motif Search</a></li>
+          <li class="nav-item"><a class="nav-link" href="/align">Alignment</a></li>
         </ul>
       </div>
     </div>
@@ -58,23 +62,95 @@ summary_html_py = """<h2>Summary Statistics</h2>
   </tbody>
 </table>"""
 
-# --- Dummy Backend ---
+motif_html_py = """<h2>Motif Search</h2>
+<form method="POST">
+  <div class="mb-3">
+    <input class="form-control" type="text" name="motif" placeholder="Enter motif (e.g., GATC)">
+  </div>
+  <button class="btn btn-primary" type="submit">Search Motif</button>
+</form>
+{% if results %}
+  <h3 class="mt-4">Results</h3>
+  <ul class="list-group">
+    {% for r in results %}
+      <li class="list-group-item">
+        <strong>{{ r.name }}</strong>: {{ r.count }} hits<br>
+        Positions: {{ r.positions }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}"""
+
+align_html_py = """<h2>Pairwise Sequence Alignment</h2>
+<form method="POST">
+  <div class="row mb-3">
+    <div class="col">
+      <label>Sequence 1</label>
+      <select class="form-control" name="seq1">
+        {% for i in range(names|length) %}
+          <option value="{{ i }}">{{ names[i] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col">
+      <label>Sequence 2</label>
+      <select class="form-control" name="seq2">
+        {% for i in range(names|length) %}
+          <option value="{{ i }}">{{ names[i] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Align</button>
+</form>
+{% if result %}
+  <h3 class="mt-4">Alignment Result</h3>
+  <p><strong>Score:</strong> {{ result.score }}</p>
+    <pre>{{ result.aligned_seq1 | join('') }}</pre>
+    <pre>{{ result.matches | join('') }}</pre>
+    <pre>{{ result.aligned_seq2 | join('') }}</pre>
+{% endif %}"""
+
 class FastaManager:
+    def __init__(self):
+        self.df = None
+        self.mito_objs = []
+
+    def parse(self, filepath):
+        parser = Parser('fasta')
+        self.df = parser.run(filepath)
+        self.mito_objs = [MitochondrialDNA(self.df.loc[i]) for i in range(len(self.df))]
+
     def get_stats(self):
-        return {'count': 5, 'min_length': 800, 'max_length': 1400, 'mean_length': 1023.6}
+        lengths = self.df['length']
+        return {
+            'count': len(self.df),
+            'min_length': lengths.min(),
+            'max_length': lengths.max(),
+            'mean_length': lengths.mean()
+        }
+
     def get_gc_contents(self):
-        return [42.1, 43.2, 41.8, 44.5, 45.1]
+        return [m.gc_content for m in self.mito_objs]
+
     def get_names(self):
-        return ['Species A', 'Species B', 'Species C', 'Species D', 'Species E']
+        return [m._MitochondrialDNA__name for m in self.mito_objs]
 
-fasta_manager=FastaManager()
+    def get_sequences(self):
+        return self.mito_objs
 
-# --- Routes ---
+fasta_manager = FastaManager()
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        flash("File uploaded successfully!")  # Stub action
-        return redirect(url_for('summary'))
+        file = request.files['file']
+        if file:
+            filepath = 'uploaded.fasta'
+            file.save(filepath)
+            fasta_manager.parse(filepath)
+            flash("File uploaded and parsed successfully!")
+            return redirect(url_for('summary'))
     return render_template_string(base_html_py, content=index_html_py)
 
 @app.route('/summary')
@@ -82,17 +158,40 @@ def summary():
     stats = fasta_manager.get_stats()
     gc_contents = fasta_manager.get_gc_contents()
     names = fasta_manager.get_names()
-
     return render_template_string(
         base_html_py,
-        content=render_template_string(
-            summary_html_py,
-            stats=stats,
-            gc_contents=gc_contents,
-            names=names,
-            zip=zip
-        )
+        content=render_template_string(summary_html_py, stats=stats, gc_contents=gc_contents, names=names, zip=zip)
     )
 
-if __name__=='__main__':
+@app.route('/motif', methods=['GET', 'POST'])
+def motif():
+    results = None
+    if request.method == 'POST':
+        motif = request.form.get('motif')
+        results = []
+        finder = MotifFinder()
+        for m in fasta_manager.get_sequences():
+            res = finder.run(m.sequence, motif=motif)
+            results.append({
+                'name': m._MitochondrialDNA__name,
+                'count': res.get('count', 0),
+                'positions': res.get('positions', [])
+            })
+    return render_template_string(base_html_py, content=render_template_string(motif_html_py, results=results))
+
+@app.route('/align', methods=['GET', 'POST'])
+def align():
+    result = None
+    names = fasta_manager.get_names()
+    if request.method == 'POST':
+        idx1 = int(request.form.get('seq1'))
+        idx2 = int(request.form.get('seq2'))
+        aligner = SequenceAligner()
+        m1 = fasta_manager.get_sequences()[idx1]
+        m2 = fasta_manager.get_sequences()[idx2]
+        aligner.run(m1.sequence, m2.sequence)
+        result = aligner.get_alignment_data()
+    return render_template_string(base_html_py, content=render_template_string(align_html_py, names=names, result=result))
+
+if __name__ == '__main__':
     app.run(debug=True)
