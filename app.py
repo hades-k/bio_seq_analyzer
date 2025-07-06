@@ -77,6 +77,36 @@ summary_html_py = """<h2>Summary Statistics</h2>
   </tbody>
 </table>"""
 
+align_html_py = """<h2>Pairwise Sequence Alignment</h2>
+<form method="POST">
+  <div class="row mb-3">
+    <div class="col">
+      <label>Sequence 1</label>
+      <select class="form-control" name="seq1">
+        {% for i in range(names|length) %}
+          <option value="{{ i }}">{{ names[i] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col">
+      <label>Sequence 2</label>
+      <select class="form-control" name="seq2">
+        {% for i in range(names|length) %}
+          <option value="{{ i }}">{{ names[i] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Align</button>
+</form>
+{% if result %}
+  <h3 class="mt-4">Alignment Result</h3>
+  <p><strong>Score:</strong> {{ result.score }}</p>
+    <pre>{{ result.aligned_seq1 | join('') }}</pre>
+    <pre>{{ result.matches | join('') }}</pre>
+    <pre>{{ result.aligned_seq2 | join('') }}</pre>
+{% endif %}"""
+
 class FastaManager:
     def __init__(self):
         self.df = None
@@ -154,6 +184,20 @@ def summary():
         content=render_template_string(summary_html_py, stats=stats, gc_contents=gc_contents, names=names, zip=zip)
     )
 
+@app.route('/align', methods=['GET', 'POST'])
+def align():
+    result = None
+    names = fasta_manager.get_names()
+    if request.method == 'POST':
+        idx1 = int(request.form.get('seq1'))
+        idx2 = int(request.form.get('seq2'))
+        aligner = SequenceAligner()
+        m1 = fasta_manager.get_sequences()[idx1]
+        m2 = fasta_manager.get_sequences()[idx2]
+        aligner.run(m1.sequence, m2.sequence)
+        result = aligner.get_alignment_data()
+    return render_template_string(base_html_py, content=render_template_string(align_html_py, result=result, names=names))
+
 @app.route('/heatmap.png')
 def heatmap():
     builder = HeatmapBuilder(fasta_manager.get_sequences())
@@ -170,6 +214,35 @@ def heatmap():
     fig.colorbar(im, ax=ax, label="Alignment Score")
     plt.tight_layout()
 
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+@app.route('/plot.png')
+def plot_png():
+    gc_contents = fasta_manager.get_gc_contents()
+    names = fasta_manager.get_names()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(names, gc_contents)
+    ax.set_ylabel('GC Content (%)')
+    ax.set_title('GC Content Distribution')
+    plt.setp(ax.get_xticklabels(), visible=False)
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+@app.route('/gc_histogram.png')
+def gc_histogram_png():
+    gc_contents = fasta_manager.get_gc_contents()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.hist(gc_contents, bins=10, edgecolor='black')
+    ax.set_xlabel('GC Content (%)')
+    ax.set_ylabel('Frequency')
+    ax.set_title('GC Content Frequency Histogram')
+    plt.tight_layout()
     img = io.BytesIO()
     fig.savefig(img, format='png')
     img.seek(0)
