@@ -106,7 +106,7 @@ class MultiAligner:
         s1 = self.mito_objs[i].sequence
         s2 = self.mito_objs[j].sequence
         aligner.run(s1, s2)
-        return ((i, j), aligner.score)
+        return ((i, j), aligner.get_alignment_data()["score"])
 
     def pairwise_scores(self):
         n = len(self.mito_objs)
