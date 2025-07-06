@@ -79,12 +79,19 @@ def index():
 
 @app.route('/summary')
 def summary():
-    stats=fasta_manager.get_stats()
-    gc_contents=fasta_manager.get_gc_contents()
-    names=fasta_manager.get_names()
+    stats = fasta_manager.get_stats()
+    gc_contents = fasta_manager.get_gc_contents()
+    names = fasta_manager.get_names()
+
     return render_template_string(
         base_html_py,
-        content=render_template_string(summary_html_py, stats=stats, gc_contents=gc_contents, names=names)
+        content=render_template_string(
+            summary_html_py,
+            stats=stats,
+            gc_contents=gc_contents,
+            names=names,
+            zip=zip
+        )
     )
 
 if __name__=='__main__':
