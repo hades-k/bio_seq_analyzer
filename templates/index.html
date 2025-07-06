@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BioSeq Analyzer - Upload FASTA</title>
+</head>
+<body>
+    <h1>BioSeq Analyzer</h1>
+    <h2>Upload a FASTA File</h2>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".fasta,.fa,.fna" required>
+        <button type="submit">Add File</button>
+    </form>
+    {% if files and files|length > 0 %}
+    <h3>Uploaded Files</h3>
+    <ul>
+      {% for filename, names in files %}
+        <li><b>{{ filename }}</b>: {{ names|join(', ') }}</li>
+      {% endfor %}
+    </ul>
+    <a href="/summary">Go to Summary &rarr;</a>
+    {% endif %}
+</body>
+</html> 

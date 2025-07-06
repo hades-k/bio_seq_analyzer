@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pairwise Alignment - BioSeq Analyzer</title>
+</head>
+<body>
+    <h1>Pairwise Alignment</h1>
+    <a href="/summary">&larr; Back to Summary</a>
+
+    <form method="post">
+        <label>Sequence 1:
+            <select name="seq1">
+                {% for name in names %}
+                <option value="{{ loop.index0 }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Sequence 2:
+            <select name="seq2">
+                {% for name in names %}
+                <option value="{{ loop.index0 }}">{{ name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Method:
+            <select name="method">
+                <option value="global">Global</option>
+                <option value="local">Local</option>
+            </select>
+        </label>
+        <button type="submit">Align</button>
+    </form>
+
+    {% if result %}
+    <h2>Alignment Result</h2>
+    <ul>
+        <li>Method: {{ result.method }}</li>
+        <li>Sequence 1: {{ result.seq1_name }}</li>
+        <li>Sequence 2: {{ result.seq2_name }}</li>
+        <li>Score: {{ result.score }}</li>
+        <li>Matches: {{ result.match_count }}</li>
+        <li>Mismatches: {{ result.mismatch_count }}</li>
+        <li>Gaps: {{ result.gap_count }}</li>
+    </ul>
+    <h3>Aligned Sequences</h3>
+    <pre>
+    {% set width = 60 %}
+    {% for i in range(0, result.aligned_seq1|length, width) %}
+    {{ result.aligned_seq1[i:i+width] }}
+    {{ result.matches[i:i+width] }}
+    {{ result.aligned_seq2[i:i+width] }}
+
+    {% endfor %}
+    </pre>
+    {% endif %}
+</body>
+</html>

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Motif Analysis - BioSeq Analyzer</title>
+</head>
+<body>
+    <h1>Motif Analysis</h1>
+    <a href="/summary">&larr; Back to Summary</a>
+    <form method="post">
+        <label>Motif (leave blank to discover): <input type="text" name="motif"></label><br>
+        <label>k (for discovery): <input type="number" name="k" value="{{ k }}" min="2" max="10"></label><br>
+        <label>Threshold: <input type="number" name="threshold" value="{{ threshold }}" min="1"></label><br>
+        <button type="submit">Analyze</button>
+    </form>
+    {% if results %}
+        <h2>Motif Search Results</h2>
+        <table border="1">
+            <tr><th>Index</th><th>Name</th><th>Count</th><th>Positions</th></tr>
+            {% for row in results %}
+            <tr>
+                <td>{{ row.index }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.count }}</td>
+                <td>{{ row.positions|join(', ') }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% if motif_counts and motif_counts|length > 0 %}
+            <h2>Motif Frequency Graph</h2>
+            <img src="{{ url_for('motif_graph') }}?k={{ k }}&threshold={{ threshold }}" alt="Motif Frequency Graph">
+        {% endif %}
+    {% endif %}
+    {% if discovered %}
+        <h2>Conserved Motifs (found in all sequences)</h2>
+        <table border="1">
+            <tr><th>Motif</th><th>Count</th></tr>
+            {% for motif, count in discovered.items() %}
+            <tr><td>{{ motif }}</td><td>{{ count }}</td></tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+</body>
+</html> 
