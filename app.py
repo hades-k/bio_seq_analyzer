@@ -127,21 +127,21 @@ align_html_py = """<h2>Pairwise Sequence Alignment</h2>
 
 class FastaManager:
     def __init__(self):
-        self.df = None
         self.mito_objs = []
+        self.parser = Parser('fasta')
 
-    def parse(self, filepath):
-        parser = Parser('fasta')
-        self.df = parser.run(filepath)
-        self.mito_objs = [MitochondrialDNA(self.df.loc[i]) for i in range(len(self.df))]
+    def load_sequences(self, filepath):
+        self.mito_objs = self.parser.run(filepath, return_objects=True)
 
     def get_stats(self):
-        lengths = self.df['length']
+        if not self.mito_objs:
+            return {'count': 0, 'min_length': 0, 'max_length': 0, 'mean_length': 0}
+        lengths = [m.length for m in self.mito_objs]
         return {
-            'count': len(self.df),
-            'min_length': lengths.min(),
-            'max_length': lengths.max(),
-            'mean_length': lengths.mean()
+            'count': len(lengths),
+            'min_length': min(lengths),
+            'max_length': max(lengths),
+            'mean_length': sum(lengths) / len(lengths) if lengths else 0
         }
 
     def get_gc_contents(self):
@@ -162,7 +162,7 @@ def index():
         if file:
             filepath = 'uploaded.fasta'
             file.save(filepath)
-            fasta_manager.parse(filepath)
+            fasta_manager.load_sequences(filepath)
             flash("File uploaded and parsed successfully!")
             return redirect(url_for('summary'))
     return render_template_string(base_html_py, content=index_html_py)

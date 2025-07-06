@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from Bio import SeqIO
 from collections import Counter
+from sequence import MitochondrialDNA
 
 class Tool(ABC):
     @abstractmethod
@@ -29,10 +30,11 @@ class Parser (Tool):
         self._df = pd.DataFrame()
         self.__records = None
 
-    def run(self, file_path):
+    def run(self, file_path, return_objects=False):
         '''
         :param file_path: path to the file to parse
-        :return: a pandas DataFrame
+        :param return_objects: if True, returns a list of MitochondrialDNA objects
+        :return: a pandas DataFrame or a list of MitochondrialDNA objects
         '''
         self._file_path = file_path
         try:
@@ -62,7 +64,10 @@ class Parser (Tool):
         if 'seq' in self._df.columns:
             self._df['length'] = self._df['seq'].str.len()
 
-        return self._df
+        if return_objects:
+            return [MitochondrialDNA(self._df.loc[i]) for i in range(len(self._df))]
+        else:
+            return self._df
 
     def save_to_csv(self, output_path=None):
         if output_path is None:
