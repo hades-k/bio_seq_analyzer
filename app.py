@@ -114,7 +114,7 @@ def index():
             file.save(filepath)
             fasta_manager.parse(filepath)
             flash("File uploaded and parsed successfully!")
-            return redirect(url_for('summary'))
+            return redirect("/summary")
     return render_template_string(base_html_py, content=index_html_py)
 
 @app.route('/heatmap.png')
