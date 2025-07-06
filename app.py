@@ -1,5 +1,8 @@
-from flask import Flask, render_template_string, request, redirect, url_for, flash
+from flask import Flask, render_template_string, request, redirect, url_for, flash, send_file
 import os
+import io
+import base64
+import matplotlib.pyplot as plt
 from tools import Parser, SequenceAligner, MotifFinder
 from sequence import MitochondrialDNA
 
@@ -60,7 +63,18 @@ summary_html_py = """<h2>Summary Statistics</h2>
       <tr><td>{{ name }}</td><td>{{ gc | round(2) }}</td></tr>
     {% endfor %}
   </tbody>
-</table>"""
+</table>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3 class="mt-4">GC Content Distribution</h3>
+        <img src="/plot.png" alt="GC Content Distribution" class="img-fluid">
+    </div>
+    <div class="col-md-6">
+        <h3 class="mt-4">GC Content Frequency</h3>
+        <img src="/gc_histogram.png" alt="GC Content Frequency Histogram" class="img-fluid">
+    </div>
+</div>
+"""
 
 motif_html_py = """<h2>Motif Search</h2>
 <form method="POST">
@@ -192,6 +206,35 @@ def align():
         aligner.run(m1.sequence, m2.sequence)
         result = aligner.get_alignment_data()
     return render_template_string(base_html_py, content=render_template_string(align_html_py, names=names, result=result))
+
+@app.route('/plot.png')
+def plot_png():
+    gc_contents = fasta_manager.get_gc_contents()
+    names = fasta_manager.get_names()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(names, gc_contents)
+    ax.set_ylabel('GC Content (%)')
+    ax.set_title('GC Content Distribution')
+    plt.xticks(rotation=45, ha='right')
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+@app.route('/gc_histogram.png')
+def gc_histogram_png():
+    gc_contents = fasta_manager.get_gc_contents()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.hist(gc_contents, bins=10, edgecolor='black')
+    ax.set_xlabel('GC Content (%)')
+    ax.set_ylabel('Frequency')
+    ax.set_title('GC Content Frequency Histogram')
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
 
 if __name__ == '__main__':
     app.run(debug=True)
