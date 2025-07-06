@@ -55,15 +55,6 @@ summary_html_py = """<h2>Summary Statistics</h2>
   <li class="list-group-item">Max Length: {{ stats.max_length }}</li>
   <li class="list-group-item">Mean Length: {{ stats.mean_length | round(2) }}</li>
 </ul>
-<h3 class="mt-4">GC Content (%)</h3>
-<table class="table table-striped">
-  <thead><tr><th>Species</th><th>GC</th></tr></thead>
-  <tbody>
-    {% for name, gc in zip(names, gc_contents) %}
-      <tr><td>{{ name }}</td><td>{{ gc | round(2) }}</td></tr>
-    {% endfor %}
-  </tbody>
-</table>
 <div class="row mt-4">
     <div class="col-md-6">
         <h3 class="mt-4">GC Content Distribution</h3>
@@ -74,6 +65,15 @@ summary_html_py = """<h2>Summary Statistics</h2>
         <img src="/gc_histogram.png" alt="GC Content Frequency Histogram" class="img-fluid">
     </div>
 </div>
+<h3 class="mt-4">GC Content (%)</h3>
+<table class="table table-striped">
+  <thead><tr><th>Species</th><th>GC</th></tr></thead>
+  <tbody>
+    {% for name, gc in zip(names, gc_contents) %}
+      <tr><td>{{ name }}</td><td>{{ gc | round(2) }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
 """
 
 motif_html_py = """<h2>Motif Search</h2>
@@ -84,6 +84,12 @@ motif_html_py = """<h2>Motif Search</h2>
   <button class="btn btn-primary" type="submit">Search Motif</button>
 </form>
 {% if results %}
+  <div class="row mt-4">
+    <div class="col-md-12">
+        <h3 class="mt-4">Motif Distribution</h3>
+        <img src="/motif_histogram.png" alt="Motif Distribution Histogram" class="img-fluid">
+    </div>
+  </div>
   <h3 class="mt-4">Results</h3>
   <ul class="list-group">
     {% for r in results %}
@@ -129,6 +135,7 @@ class FastaManager:
     def __init__(self):
         self.mito_objs = []
         self.parser = Parser('fasta')
+        self.motif_results = None
 
     def load_sequences(self, filepath):
         self.mito_objs = self.parser.run(filepath, return_objects=True)
@@ -191,6 +198,7 @@ def motif():
                 'count': res.get('count', 0),
                 'positions': res.get('positions', [])
             })
+        fasta_manager.motif_results = results
     return render_template_string(base_html_py, content=render_template_string(motif_html_py, results=results))
 
 @app.route('/align', methods=['GET', 'POST'])
@@ -215,7 +223,7 @@ def plot_png():
     ax.bar(names, gc_contents)
     ax.set_ylabel('GC Content (%)')
     ax.set_title('GC Content Distribution')
-    plt.xticks(rotation=45, ha='right')
+    plt.setp(ax.get_xticklabels(), visible=False)
     plt.tight_layout()
     img = io.BytesIO()
     fig.savefig(img, format='png')
@@ -230,6 +238,23 @@ def gc_histogram_png():
     ax.set_xlabel('GC Content (%)')
     ax.set_ylabel('Frequency')
     ax.set_title('GC Content Frequency Histogram')
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+@app.route('/motif_histogram.png')
+def motif_histogram_png():
+    if not fasta_manager.motif_results:
+        return "", 404
+    names = [r['name'] for r in fasta_manager.motif_results]
+    counts = [r['count'] for r in fasta_manager.motif_results]
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(names, counts)
+    ax.set_ylabel('Motif Count')
+    ax.set_title('Motif Distribution')
+    plt.setp(ax.get_xticklabels(), visible=False)
     plt.tight_layout()
     img = io.BytesIO()
     fig.savefig(img, format='png')
