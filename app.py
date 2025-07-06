@@ -1,216 +1,91 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, send_file, Response
-from werkzeug.utils import secure_filename
-import os
-import pandas as pd
-from tools import Parser, SequenceAligner, MotifFinder
-from sequence import MitochondrialDNA
-from comparer import SequenceComparer, ConservedMotifAnalyzer
-import io
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = {'fasta', 'fa', 'fna'}
+from flask import Flask, render_template_string, request, redirect, url_for, flash
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'bioseq2024'  # For flash messages
+app.secret_key = 'bioseq2024'
 
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+# --- Template Strings ---
+base_html_py="""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>mtDNA Analyzer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">mtDNA Analyzer</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="/summary">Summary</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="alert alert-info">{{ messages[0] }}</div>
+      {% endif %}
+    {% endwith %}
+    {{ content|safe }}
+  </div>
+</body>
+</html>"""
 
-# --- OOP Web Controller Classes ---
+index_html_py = """<h2>Upload a FASTA File</h2>
+<form method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <input class="form-control" type="file" name="file" required>
+  </div>
+  <button class="btn btn-primary" type="submit">Upload</button>
+</form>"""
+
+summary_html_py = """<h2>Summary Statistics</h2>
+<ul class="list-group">
+  <li class="list-group-item">Total Sequences: {{ stats.count }}</li>
+  <li class="list-group-item">Min Length: {{ stats.min_length }}</li>
+  <li class="list-group-item">Max Length: {{ stats.max_length }}</li>
+  <li class="list-group-item">Mean Length: {{ stats.mean_length | round(2) }}</li>
+</ul>
+<h3 class="mt-4">GC Content (%)</h3>
+<table class="table table-striped">
+  <thead><tr><th>Species</th><th>GC</th></tr></thead>
+  <tbody>
+    {% for name, gc in zip(names, gc_contents) %}
+      <tr><td>{{ name }}</td><td>{{ gc | round(2) }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>"""
+
+# --- Dummy Backend ---
 class FastaManager:
-    def __init__(self):
-        self.files = []  # List of (filename, DataFrame, mito_objs)
-
-    def parse(self, filepath, filename):
-        parser = Parser('fasta')
-        df = parser.run(filepath)
-        mito_objs = [MitochondrialDNA(df.loc[i]) for i in range(len(df))]
-        self.files.append((filename, df, mito_objs))
-        return df
-
     def get_stats(self):
-        if not self.files:
-            return {}
-        lengths = pd.concat([df['length'] for _, df, _ in self.files])
-        stats = {
-            'count': len(lengths),
-            'min_length': lengths.min(),
-            'max_length': lengths.max(),
-            'mean_length': lengths.mean(),
-        }
-        return stats
-
+        return {'count': 5, 'min_length': 800, 'max_length': 1400, 'mean_length': 1023.6}
     def get_gc_contents(self):
-        if not self.files:
-            return []
-        return [obj.gc_content for _, _, mito_objs in self.files for obj in mito_objs]
-
+        return [42.1, 43.2, 41.8, 44.5, 45.1]
     def get_names(self):
-        if not self.files:
-            return []
-        return [obj._MitochondrialDNA__name for _, _, mito_objs in self.files for obj in mito_objs]
+        return ['Species A', 'Species B', 'Species C', 'Species D', 'Species E']
 
-    def get_sequences(self):
-        return [obj for _, _, mito_objs in self.files for obj in mito_objs]
+fasta_manager=FastaManager()
 
-    def get_file_labels(self):
-        # Returns a list of (filename, [names])
-        return [(filename, [obj._MitochondrialDNA__name for obj in mito_objs]) for filename, _, mito_objs in self.files]
-
-class MotifWebTool:
-    def __init__(self, mito_objs):
-        self.mito_objs = mito_objs
-        self.finder = MotifFinder()
-
-    def search_motif(self, motif):
-        results = []
-        for i, obj in enumerate(self.mito_objs):
-            res = self.finder.run(obj.sequence, motif=motif)
-            results.append({'index': i, 'name': obj._MitochondrialDNA__name, 'count': res['count'], 'positions': res['positions']})
-        return results
-
-    def discover_motifs(self, k=5, threshold=2):
-        analyzer = ConservedMotifAnalyzer(self.mito_objs)
-        return analyzer.find_conserved(k=k, threshold=threshold)
-
-class AlignmentWebTool:
-    def __init__(self, mito_objs):
-        self.mito_objs = mito_objs
-        self.comparer = SequenceComparer(mito_objs)
-
-    def align_pair(self, idx1, idx2, method='global'):
-        return self.comparer.compare_pair(idx1, idx2, method)
-
-    def all_pairwise(self):
-        return self.comparer.compare_all()
-
-# --- Flask Routes ---
-fasta_manager = FastaManager()
-
-# Store motif_counts for graphing
-last_motif_counts = {}
-
+# --- Routes ---
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(request.url)
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            fasta_manager.parse(filepath, filename)
-            flash(f'File {filename} uploaded and parsed successfully!')
-            return redirect(url_for('summary'))
-        else:
-            flash('Invalid file type!')
-            return redirect(request.url)
-    return render_template('index.html', files=fasta_manager.get_file_labels())
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+        flash("File uploaded successfully!")  # Stub action
+        return redirect(url_for('summary'))
+    return render_template_string(base_html_py, content=index_html_py)
 
 @app.route('/summary')
 def summary():
-    stats = fasta_manager.get_stats()
-    gc_contents = fasta_manager.get_gc_contents()
-    names = fasta_manager.get_names()
-    return render_template('summary.html', stats=stats, names=names, gc_contents=gc_contents)
+    stats=fasta_manager.get_stats()
+    gc_contents=fasta_manager.get_gc_contents()
+    names=fasta_manager.get_names()
+    return render_template_string(
+        base_html_py,
+        content=render_template_string(summary_html_py, stats=stats, gc_contents=gc_contents, names=names)
+    )
 
-@app.route('/motif', methods=['GET', 'POST'])
-def motif():
-    global last_motif_counts
-    results = None
-    discovered = None
-    motif_counts = None
-    k = 5
-    threshold = 2
-    if request.method == 'POST':
-        motif = request.form.get('motif')
-        k = int(request.form.get('k', 5))
-        threshold = int(request.form.get('threshold', 2))
-        tool = MotifWebTool(fasta_manager.get_sequences())
-        if motif and motif.strip():
-            results = tool.search_motif(motif)
-            last_motif_counts = {}
-        else:
-            analyzer = ConservedMotifAnalyzer(fasta_manager.get_sequences())
-            discovered, motif_counts = analyzer.find_conserved(k=k, threshold=threshold)
-            last_motif_counts = motif_counts if motif_counts else {}
-            if discovered is None:
-                discovered = {}
-    else:
-        discovered = {}
-        motif_counts = {}
-        last_motif_counts = {}
-    return render_template('motif.html', results=results, discovered=discovered, motif_counts=motif_counts, k=k, threshold=threshold)
-
-@app.route('/motif_graph')
-def motif_graph():
-    global last_motif_counts
-    motif_counts = last_motif_counts
-    if not motif_counts:
-        return Response(status=204)
-    # Sort motifs by frequency
-    motifs, counts = zip(*sorted(motif_counts.items(), key=lambda x: x[1], reverse=True))
-    plt.figure(figsize=(10, 4))
-    plt.bar(motifs, counts)
-    plt.xlabel('Motif')
-    plt.ylabel('Frequency')
-    plt.title('Motif Frequency')
-    plt.tight_layout()
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close()
-    buf.seek(0)
-    return Response(buf.getvalue(), mimetype='image/png')
-
-@app.route('/gc_graph')
-def gc_graph():
-    gc_contents = fasta_manager.get_gc_contents()
-    if not gc_contents:
-        return Response(status=204)
-    plt.figure(figsize=(8, 4))
-    plt.hist([gc for gc in gc_contents if gc is not None], bins=20, color='skyblue', edgecolor='black')
-    plt.xlabel('GC Content (%)')
-    plt.ylabel('Number of Sequences')
-    plt.title('GC Content Distribution')
-    plt.tight_layout()
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    plt.close()
-    buf.seek(0)
-    return Response(buf.getvalue(), mimetype='image/png')
-
-@app.route('/align', methods=['GET', 'POST'])
-def align():
-    result = None
-    names = fasta_manager.get_names()
-    seq1_name = seq2_name = method = None
-    if request.method == 'POST':
-        idx1 = int(request.form.get('seq1'))
-        idx2 = int(request.form.get('seq2'))
-        method = request.form.get('method', 'global')
-        tool = AlignmentWebTool(fasta_manager.get_sequences())
-        result = tool.align_pair(idx1, idx2, method)
-        result['method'] = method.capitalize()
-        result['seq1_name'] = names[idx1]
-        result['seq2_name'] = names[idx2]
-        result['aligned_seq1'] = ''.join(result['aligned_seq1'])
-        result['aligned_seq2'] = ''.join(result['aligned_seq2'])
-        result['matches'] = ''.join(result['matches'])
-        seq1_name = names[idx1]
-        seq2_name = names[idx2]
-    return render_template('align.html', result=result, names=names, seq1_name=seq1_name, seq2_name=seq2_name, method=method)
-
-if __name__ == '__main__':
-    app.run(debug=True) 
+if __name__=='__main__':
+    app.run(debug=True)
