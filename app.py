@@ -50,6 +50,31 @@ index_html_py = """<h2>Upload a FASTA File</h2>
   <button class="btn btn-primary" type="submit">Upload</button>
 </form>"""
 
+motif_html_py = """<h2>Motif Search</h2>
+<form method="POST">
+  <div class="mb-3">
+    <input class="form-control" type="text" name="motif" placeholder="Enter motif (e.g., GATC)">
+  </div>
+  <button class="btn btn-primary" type="submit">Search Motif</button>
+</form>
+{% if results %}
+  <div class="row mt-4">
+    <div class="col-md-12">
+        <h3 class="mt-4">Motif Distribution</h3>
+        <img src="/motif_histogram.png" alt="Motif Distribution Histogram" class="img-fluid">
+    </div>
+  </div>
+  <h3 class="mt-4">Results</h3>
+  <ul class="list-group">
+    {% for r in results %}
+      <li class="list-group-item">
+        <strong>{{ r.name }}</strong>: {{ r.count }} hits<br>
+        Positions: {{ r.positions }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}"""
+
 summary_html_py = """<h2>Summary Statistics</h2>
 <ul class="list-group">
   <li class="list-group-item">Total Sequences: {{ stats.count }}</li>
@@ -112,6 +137,7 @@ class FastaManager:
         self.df = None
         self.records = None
         self.mito_objs = []
+        self.motif_results = None
 
     def parse(self, filepath):
         parser = Parser('fasta')
@@ -184,6 +210,23 @@ def summary():
         content=render_template_string(summary_html_py, stats=stats, gc_contents=gc_contents, names=names, zip=zip)
     )
 
+@app.route('/motif', methods=['GET', 'POST'])
+def motif():
+    results = None
+    if request.method == 'POST':
+        motif = request.form.get('motif')
+        results = []
+        finder = MotifFinder()
+        for m in fasta_manager.get_sequences():
+            res = finder.run(m.sequence, motif=motif)
+            results.append({
+                'name': m._MitochondrialDNA__name,
+                'count': res.get('count', 0),
+                'positions': res.get('positions', [])
+            })
+        fasta_manager.motif_results = results
+    return render_template_string(base_html_py, content=render_template_string(motif_html_py, results=results))
+
 @app.route('/align', methods=['GET', 'POST'])
 def align():
     result = None
@@ -197,6 +240,23 @@ def align():
         aligner.run(m1.sequence, m2.sequence)
         result = aligner.get_alignment_data()
     return render_template_string(base_html_py, content=render_template_string(align_html_py, result=result, names=names))
+
+@app.route('/motif_histogram.png')
+def motif_histogram_png():
+    if not fasta_manager.motif_results:
+        return "", 404
+    names = [r['name'] for r in fasta_manager.motif_results]
+    counts = [r['count'] for r in fasta_manager.motif_results]
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(names, counts)
+    ax.set_ylabel('Motif Count')
+    ax.set_title('Motif Distribution')
+    plt.setp(ax.get_xticklabels(), visible=False)
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
 
 @app.route('/heatmap.png')
 def heatmap():
