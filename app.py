@@ -50,6 +50,33 @@ index_html_py = """<h2>Upload a FASTA File</h2>
   <button class="btn btn-primary" type="submit">Upload</button>
 </form>"""
 
+summary_html_py = """<h2>Summary Statistics</h2>
+<ul class="list-group">
+  <li class="list-group-item">Total Sequences: {{ stats.count }}</li>
+  <li class="list-group-item">Min Length: {{ stats.min_length }}</li>
+  <li class="list-group-item">Max Length: {{ stats.max_length }}</li>
+  <li class="list-group-item">Mean Length: {{ stats.mean_length | round(2) }}</li>
+</ul>
+<div class="row mt-4">
+    <div class="col-md-6">
+        <h3 class="mt-4">GC Content Distribution</h3>
+        <img src="/plot.png" alt="GC Content Distribution" class="img-fluid">
+    </div>
+    <div class="col-md-6">
+        <h3 class="mt-4">GC Content Frequency</h3>
+        <img src="/gc_histogram.png" alt="GC Content Frequency Histogram" class="img-fluid">
+    </div>
+</div>
+<h3 class="mt-4">GC Content (%)</h3>
+<table class="table table-striped">
+  <thead><tr><th>Species</th><th>GC</th></tr></thead>
+  <tbody>
+    {% for name, gc in zip(names, gc_contents) %}
+      <tr><td>{{ name }}</td><td>{{ gc | round(2) }}</td></tr>
+    {% endfor %}
+  </tbody>
+</table>"""
+
 class FastaManager:
     def __init__(self):
         self.df = None
@@ -116,6 +143,16 @@ def index():
             flash("File uploaded and parsed successfully!")
             return redirect("/summary")
     return render_template_string(base_html_py, content=index_html_py)
+
+@app.route('/summary')
+def summary():
+    stats = fasta_manager.get_stats()
+    gc_contents = fasta_manager.get_gc_contents()
+    names = fasta_manager.get_names()
+    return render_template_string(
+        base_html_py,
+        content=render_template_string(summary_html_py, stats=stats, gc_contents=gc_contents, names=names, zip=zip)
+    )
 
 @app.route('/heatmap.png')
 def heatmap():
