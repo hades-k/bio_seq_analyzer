@@ -269,8 +269,8 @@ def heatmap_view():
 
 @app.route('/heatmap.png')
 def heatmap_png():
-    sequences = fasta_manager.get_sequences()
-    names = fasta_manager.get_names()
+    sequences = fasta_manager.get_sequences()[:10]
+    names = fasta_manager.get_names()[:10]
     aligner = MultiAligner(sequences)
     score_map = aligner.pairwise_scores()
     n = len(sequences)
