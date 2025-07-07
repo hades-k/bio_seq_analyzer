@@ -499,7 +499,7 @@ To run the Bio Seq Analyzer web application locally:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/bio-seq-analyzer.git
+git clone https://github.com/hades-k/bio-seq-analyzer.git
 cd bio-seq-analyzer
 ```
 
