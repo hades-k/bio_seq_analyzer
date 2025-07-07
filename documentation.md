@@ -160,6 +160,15 @@ This document provides a detailed overview of the classes and methods used in th
 
 ## Method Documentation
 
+### `Sequence` Class
+
+| Method/Property | Input | Output | Example |
+| :--- | :--- | :--- | :--- |
+| `__init__(df)` | `df`: pandas DataFrame row | Initializes the abstract base class. | `seq_obj = Sequence(df_row)` |
+| `sequence` (abstract property) | None | The biological sequence: `str` | `seq = seq_obj.sequence` |
+| `length` (abstract property) | None | Length of the sequence: `int` | `l = seq_obj.length` |
+
+
 ### `MitochondrialDNA` Class
 
 | Method/Property | Input | Output | Example |
@@ -172,11 +181,4 @@ This document provides a detailed overview of the classes and methods used in th
 | `find_irregular_bases()` | None | A list of non-standard bases found: `list[str]` | `irregulars = dna.find_irregular_bases()` |
 | `name` (property) | None | The name of the sequence: `str` | `name = dna.name` |
 
-### `Sequence` Class
-
-| Method/Property | Input | Output | Example |
-| :--- | :--- | :--- | :--- |
-| `__init__(df)` | `df`: pandas DataFrame row | Initializes the abstract base class. | `seq_obj = Sequence(df_row)` |
-| `sequence` (abstract property) | None | The biological sequence: `str` | `seq = seq_obj.sequence` |
-| `length` (abstract property) | None | Length of the sequence: `int` | `l = seq_obj.length` |
 
