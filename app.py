@@ -137,6 +137,35 @@ def align():
 
     return render_template('align.html', result=result, names=names, indexed_names=list(enumerate(names)))
 
+@app.route('/compare_reference', methods=['GET', 'POST'])
+def compare_reference():
+    comparison_results = None
+    names = fasta_manager.get_names()
+    if request.method == 'POST':
+        ref_idx = int(request.form.get('reference_seq'))
+        method = request.form.get('method', 'global')
+        match = int(request.form.get('match', 2))
+        mismatch = int(request.form.get('mismatch', -1))
+        gap = int(request.form.get('gap', -2))
+
+        comparer = SequenceComparer(fasta_manager.get_sequences(), match=match, mismatch=mismatch, gap=gap)
+        comparison_results = comparer.compare_to_reference(ref_idx, method)
+        reference_name = names[ref_idx]
+
+        # Add sequence names to results for display
+        for result in comparison_results:
+            result['seq1_name'] = names[ref_idx]
+            result['seq2_name'] = names[result['reference_vs']]
+            result['method'] = method # Add method to result for display
+            result['matches_count'] = result['matches'] # Rename for consistency with template
+            result['mismatches_count'] = result['mismatches'] # Rename for consistency with template
+            result['gaps_count'] = result['gaps'] # Rename for consistency with template
+
+    return render_template('compare_reference.html',
+                           indexed_names=list(enumerate(names)),
+                           comparison_results=comparison_results,
+                           reference_name=reference_name if 'reference_name' in locals() else None)
+
 @app.route('/plot.png')
 def plot_png():
     gc_contents = fasta_manager.get_gc_contents()
