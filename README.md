@@ -25,6 +25,7 @@ BioSeq Analyzer is a modular software solution for analyzing mitochondrial DNA (
 ├── templates/            # HTML templates for the web interface
 │   ├── align.html
 │   ├── base.html
+│   ├── compare_reference.html
 │   ├── index.html
 │   ├── motif.html
 │   └── summary.html
@@ -33,7 +34,8 @@ BioSeq Analyzer is a modular software solution for analyzing mitochondrial DNA (
 ├── synthetic_mtDNA_dataset.fasta  # Example input file
 ├── requirements.txt      # Python dependencies
 ├── documentation.md      # Project documentation
-└── README.md             # This file
+├── README.md             # This file
+└── UML-diagram.png       # UML diagram visible in the documentation.md
 ```
 
 ---
