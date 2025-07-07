@@ -14,6 +14,7 @@ is## Table of Contents
   - [SequenceAligner](#sequencealigner-class)
   - [FastaManager](#fastamanager-class)
 - [Web Interface Templates](#web-interface-templates)
+- [Example Input/Output](#example-inputoutput)
 - [Object-Oriented Design Principles](#object-oriented-design-principles)
 - [Module Dependency Diagram](#module-dependency-diagram)
 
