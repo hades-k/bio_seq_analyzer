@@ -377,12 +377,22 @@ class MotifFinder(Tool):
 
                 motif_occurrences_details[motif][seq_idx] = self._find_motif_occurrences(sequence, motif)
 
-        conserved_motifs_details = {}
-        for motif, seq_details in motif_occurrences_details.items():
-            if len(seq_details) >= threshold:
-                conserved_motifs_details[motif] = seq_details
-
-        return conserved_motifs_details
+            conserved_motifs = []
+            for motif, seq_details in motif_occurrences_details.items():
+                if len(seq_details) >= threshold:
+                    conserved_motifs.append({
+                        'motif': motif,
+                        'sequences': [
+                            {
+                                'sequence_index': i,
+                                'sequence_name': sequences[i].name,
+                                'positions': positions
+                            }
+                            for i, positions in seq_details.items()
+                        ]
+                    })
+        
+            return conserved_motifs
 
     def get_result(self):
         if not self.__last_result:
