@@ -95,6 +95,7 @@ def motif():
     discovered = None
     finder = MotifFinder()
     sequences = fasta_manager.get_sequences()
+    max_length = max([s.length for s in sequences]) if sequences else 1
 
     if request.method == 'POST':
         motif_str = request.form.get('motif')
@@ -107,8 +108,11 @@ def motif():
         else:
             discovered = finder.run(sequences, k=k, threshold=min_sequences_with_motif)
 
-    return render_template('motif.html', results=results,
-                           discovered=discovered, sequence_names=fasta_manager.get_names())
+    return render_template('motif.html',
+                           results=results,
+                           discovered=discovered,
+                           sequence_names=fasta_manager.get_names(),
+                           max_length=max_length)
 
 @app.route('/align', methods=['GET', 'POST'])
 def align():

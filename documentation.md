@@ -10,6 +10,10 @@ is## Table of Contents
   - [AlignmentVisualizer](#alignmentvisualizer-class)
   - [SequenceComparer](#sequencecomparer-class)
 - [Web Interface Templates](#web-interface-templates)
+- [Object-Oriented Design Principles](#object-oriented-design-principles)
+- [Module Dependency Diagram](#module-dependency-diagram)
+
+
 
 # Project Documentation
 
