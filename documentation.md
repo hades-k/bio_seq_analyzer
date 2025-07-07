@@ -32,7 +32,7 @@ This document provides a detailed overview of the classes and methods used in th
 - `Sequence` (superclass)
 - `Parser` (instantiated from data parsed by)
 - `FastaManager` (manages collections of)
-- `MotifFinder`, `SequenceAligner`, `SequenceComparer`, `ConservedMotifAnalyzer`, `SequenceAlignWrapper`, `MultiAligner` (used by)
+- `MotifFinder`, `SequenceAligner`, `SequenceComparer` (used by)
 
 ---
 
@@ -69,7 +69,7 @@ This document provides a detailed overview of the classes and methods used in th
 **Class:** `SequenceAligner`
 
 **Responsibilities:**
-- Align two biological sequences using Needleman-Wunsch (global) or Smith-Waterman (local) algorithms 
+- Align two biological sequences using Needleman-Wunsch (global) or Smith-Waterman (local) algorithms
 - Calculate the alignment score
 - Calculate the number of matches/mismatches/gaps
 - Optionally print the alignment score matrix
@@ -78,8 +78,8 @@ This document provides a detailed overview of the classes and methods used in th
 **Collaborators:**
 - `MitochondrialDNA` (input type)
 - `Tool` (superclass)
-- `SequenceAlignWrapper` (delegates alignment tasks)
-- `SequenceComparer`, `AlignmentVisualizer`, `MultiAligner` (use `SequenceAligner`)
+- `SequenceAlignWrapper` (used internally)
+- `SequenceComparer`, `MultiAligner` (use `SequenceAligner`)
 
 ----
 
@@ -93,15 +93,15 @@ This document provides a detailed overview of the classes and methods used in th
 **Collaborators:**
 - `Tool` (Superclass)
 - `MitochondrialDNA` (provides input sequences)
-- `ConservedMotifAnalyzer` (uses MotifFinder for motif discovery across multiple sequences)
 
 ----
 
 **Class:** `FastaManager`
 
 **Responsibilities:**
-- Load and manage multiple `MitochondrialDNA` objects
-- Provide stats (GC content, length range, names, count)
+- Load and manage multiple FASTA datasets, each containing `MitochondrialDNA` objects
+- Set the currently active dataset
+- Provide statistics (GC content, length range, names, count) for the current dataset
 
 **Collaborators:**
 - `Parser` (used to load sequences)
@@ -113,11 +113,11 @@ This document provides a detailed overview of the classes and methods used in th
 
 **Responsibilities:**
 - Wrap `SequenceAligner` to simplify usage and expose a cleaner interface
-- Provide alignment data and report interface
+- Perform alignment and return alignment data.
 
 **Collaborators:**
 - `SequenceAligner` (used internally)
-- `AlignmentVisualizer`, `SequenceComparer`, `MultiAligner` (use this wrapper)
+- `AlignmentVisualizer`, `SequenceComparer` (use this wrapper)
 
 ----
 
@@ -128,7 +128,7 @@ This document provides a detailed overview of the classes and methods used in th
 - Show alignment symbols, score, matches/mismatches/gaps
 
 **Collaborators:**
-- `SequenceAlignWrapper`, `SequenceAligner` (used to perform alignment)
+- `SequenceAlignWrapper` (used to perform alignment)
 - `MitochondrialDNA` (input data)
 
 ----
@@ -141,20 +141,7 @@ This document provides a detailed overview of the classes and methods used in th
 
 **Collaborators:**
 - `MitochondrialDNA` (input data)
-- `SequenceAlignWrapper`, `SequenceAligner` (used to perform alignment)
-
----
-
-**Class:** `ConservedMotifAnalyzer`
-
-**Responsibilities:**
-- Use `MotifFinder` to discover motifs in all sequences
-- Identify motifs that are conserved (shared by all sequences)
-- Return conserved motifs and positions
-
-**Collaborators:**
-- `MitochondrialDNA` (input data)
-- `MotifFinder` (used for all motif operations)
+- `SequenceAlignWrapper` (used to perform alignment)
 
 ---
 
@@ -162,25 +149,34 @@ This document provides a detailed overview of the classes and methods used in th
 
 **Responsibilities:**
 - Perform pairwise alignments and return a matrix of scores
-- Display alignment report for a specific pair
 
 **Collaborators:**
 - `MitochondrialDNA` (input data)
-- `SequenceAlignWrapper`, `SequenceAligner` (performs alignments)
+- `SequenceAligner` (performs alignments)
 
 ---
+
 
 
 ## Method Documentation
 
 ### `MitochondrialDNA` Class
 
-| Method | Input | Output | Example |
+| Method/Property | Input | Output | Example |
 | :--- | :--- | :--- | :--- |
 | `__init__(df)` | `df`: pandas DataFrame row | A `MitochondrialDNA` object | `dna = MitochondrialDNA(df_row)` |
-| `sequence()` | None | The DNA sequence: `str` | `seq = dna.sequence()` |
-| `length()` | None | Length of the sequence: `int` | `l = dna.length()` |
-| `gc_content()` | None | Percentage of GC content: `float` | `gc = dna.gc_content()` |
+| `sequence` (property) | None | The DNA sequence: `str` | `seq = dna.sequence` |
+| `length` (property) | None | Length of the sequence: `int` | `l = dna.length` |
+| `gc_content` (property) | None | Percentage of GC content: `float` | `gc = dna.gc_content` |
 | `get_subsequence(start, end)` | `start`: `int`, `end`: `int` | The subsequence: `str` | `sub = dna.get_subsequence(10, 50)` |
 | `find_irregular_bases()` | None | A list of non-standard bases found: `list[str]` | `irregulars = dna.find_irregular_bases()` |
+| `name` (property) | None | The name of the sequence: `str` | `name = dna.name` |
+
+### `Sequence` Class
+
+| Method/Property | Input | Output | Example |
+| :--- | :--- | :--- | :--- |
+| `__init__(df)` | `df`: pandas DataFrame row | Initializes the abstract base class. | `seq_obj = Sequence(df_row)` |
+| `sequence` (abstract property) | None | The biological sequence: `str` | `seq = seq_obj.sequence` |
+| `length` (abstract property) | None | Length of the sequence: `int` | `l = seq_obj.length` |
 
