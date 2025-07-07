@@ -157,16 +157,6 @@ This document provides a detailed overview of the classes and methods used in th
 
 ---
 
-**Class:** `MultiAligner`
-
-**Responsibilities:**
-- Perform pairwise alignments and return a matrix of scores
-
-**Collaborators:**
-- `MitochondrialDNA` (input data)
-- `SequenceAligner` (performs alignments)
-
----
 
 ## Description
 This software models mitochondrial DNA using a modular and extensible object-oriented design. Sequences are loaded from FASTA files via the `Parser` class and represented as `MitochondrialDNA` objects. Users can extract statistics (e.g., GC content), search for motifs, and perform sequence alignments. Classes like `SequenceAligner` and `MotifFinder` inherit a shared interface from `Tool`. `SequenceComparer` and `MultiAligner` offer comparative insights across datasets. All components are designed for reuse, extensibility, and clear separation of responsibilities.
@@ -502,3 +492,67 @@ Compares each sequence to a reference.
 - `method` (`str`): Alignment method
 **Returns:**
 - `List[dict]`: Stats per comparison
+
+## Getting Started (Installation & Usage)
+
+To run the Bio Seq Analyzer web application locally:
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/yourusername/bio-seq-analyzer.git
+cd bio-seq-analyzer
+```
+
+### 2. Set Up a Virtual Environment (Optional but recommended)
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 3. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+If you don’t have a `requirements.txt` yet, create one with:
+```
+Flask
+biopython
+pandas
+matplotlib
+```
+
+### 4. Run the Application
+```bash
+python app.py
+```
+
+Navigate to [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
+
+### 5. Features via Web Interface
+- Upload FASTA files
+- View sequence statistics (length, GC content)
+- Motif search and k-mer discovery
+- Global & local sequence alignment
+- View plots (GC content, motif distribution)
+
+---
+
+## Object-Oriented Design Principles
+
+This project is structured around modern OOP principles:
+
+### ✔ Encapsulation
+Classes like `MitochondrialDNA` and `SequenceAligner` encapsulate internal data (e.g., sequences, alignment results), exposing functionality through clean public interfaces.
+
+### ✔ Abstraction
+`Sequence` and `Tool` are abstract base classes enforcing essential methods (`run`, `report`, etc.) in all subclasses, enabling modular and consistent logic.
+
+### ✔ Inheritance
+- `MitochondrialDNA` inherits from `Sequence`
+- `MotifFinder`, `SequenceAligner`, and `Parser` all inherit from `Tool`
+
+This promotes reuse and shared structure across tools.
+
+### ✔ Polymorphism
+Generic interfaces (`run()`, `report()`) allow tools like `Parser`, `MotifFinder`, and `SequenceAligner` to be used interchangeably in pipelines and the frontend.
