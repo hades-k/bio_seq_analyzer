@@ -18,24 +18,24 @@ BioSeq Analyzer is a modular software solution for analyzing mitochondrial DNA (
 ## Project Structure
 
 ```
-├── app.py                # Flask web application
-├── tools.py              # Parsing, alignment, and motif-finding tools
-├── sequence.py           # MitochondrialDNA and sequence representation
-├── comparer.py           # High-level analysis and integration
-├── templates/            # HTML templates for the web interface
+├── app.py                         # Flask web application
+├── tools.py                       # Parsing, alignment, and motif-finding tools
+├── sequence.py                    # MitochondrialDNA and sequence representation
+├── comparer.py                    # High-level analysis and integration
+├── templates/                     # HTML templates for the web interface
 │   ├── align.html
 │   ├── base.html
 │   ├── compare_reference.html
 │   ├── index.html
 │   ├── motif.html
 │   └── summary.html
-├── uploads/              # Directory for uploaded FASTA files
-├── P04637.fasta          # Example FASTA file
+├── uploads/                       # Directory for uploaded FASTA files
+├── P53_human.fasta                # Example FASTA file
 ├── synthetic_mtDNA_dataset.fasta  # Example input file
-├── requirements.txt      # Python dependencies
-├── documentation.md      # Project documentation
-├── README.md             # This file
-└── UML-diagram.png       # UML diagram visible in the documentation.md
+├── requirements.txt               # Python dependencies
+├── documentation.md               # Project documentation
+├── README.md                      # This file
+└── UML-diagram.png                # UML diagram visible in the documentation.md
 ```
 
 ---
