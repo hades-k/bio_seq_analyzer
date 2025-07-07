@@ -2,38 +2,45 @@
 {% block content %}
   <h1>Pairwise Alignment</h1>
 
-  <form method="post">
-    <label for="seq1">Sequence 1:</label>
-    <select name="seq1">
-      {% for i, name in indexed_names %}
-        <option value="{{ i }}">{{ name }}</option>
-      {% endfor %}
-    </select>
+  <form method="post" class="mt-3">
+    <div class="mb-3">
+      <label for="seq1" class="form-label">Sequence 1:</label>
+      <select name="seq1" class="form-select">
+        {% for i, name in indexed_names %}
+          <option value="{{ i }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-    <label for="seq2">Sequence 2:</label>
-    <select name="seq2">
-      {% for i, name in indexed_names %}
-        <option value="{{ i }}">{{ name }}</option>
-      {% endfor %}
-    </select>
+    <div class="mb-3">
+      <label for="seq2" class="form-label">Sequence 2:</label>
+      <select name="seq2" class="form-select">
+        {% for i, name in indexed_names %}
+          <option value="{{ i }}">{{ name }}</option>
+        {% endfor %}
+      </select>
+    </div>
 
-    <label for="method">Method:</label>
-    <select name="method">
-      <option value="global">Global</option>
-      <option value="local">Local</option>
-    </select><br><br>
+    <div class="mb-3">
+      <label for="method" class="form-label">Method:</label>
+      <select name="method" class="form-select">
+        <option value="global">Global</option>
+        <option value="local">Local</option>
+      </select>
+    </div>
 
-    <label for="match">Match Score:</label>
-    <input type="number" name="match" value="2">
+    <div class="mb-3">
+      <label for="match" class="form-label">Match Score:</label>
+      <input type="number" name="match" class="form-control" value="2">
 
-    <label for="mismatch">Mismatch Penalty:</label>
-    <input type="number" name="mismatch" value="-1">
+      <label for="mismatch" class="form-label">Mismatch Penalty:</label>
+      <input type="number" name="mismatch" class="form-control" value="-1">
 
-    <label for="gap">Gap Penalty:</label>
-    <input type="number" name="gap" value="-2">
-    <br><br>
+      <label for="gap" class="form-label">Gap Penalty:</label>
+      <input type="number" name="gap" class="form-control" value="-2">
+    </div>
 
-    <button type="submit">Align</button>
+    <button type="submit" class="btn btn-primary">Align</button>
   </form>
 
   {% if result %}
