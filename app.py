@@ -120,7 +120,7 @@ def align():
         idx2 = int(request.form.get('seq2'))
         method = request.form.get('method', 'global')
 
-        # New: custom scoring
+        # Get custom scoring
         match = int(request.form.get('match', 2))
         mismatch = int(request.form.get('mismatch', -1))
         gap = int(request.form.get('gap', -2))
@@ -132,12 +132,12 @@ def align():
         aligner.run(seq1, seq2, method)
         result = aligner.get_alignment_data()
 
-    return render_template(
-    'align.html',
-    result=result,
-    names=names,
-    indexed_names=list(enumerate(names))
-)
+        # Pre-join for template
+        result['aligned_seq1'] = ''.join(result['aligned_seq1'])
+        result['aligned_seq2'] = ''.join(result['aligned_seq2'])
+        result['matches'] = ''.join(result['matches'])
+
+    return render_template('align.html', result=result, names=names, indexed_names=list(enumerate(names)))
 
 @app.route('/plot.png')
 def plot_png():
