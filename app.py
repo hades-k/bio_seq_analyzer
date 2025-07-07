@@ -81,7 +81,7 @@ def index():
         else:
             flash('Invalid file type!')
             return redirect(request.url)
-    return render_template('index.html')
+    return render_template('index.html', fasta_manager=fasta_manager)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
