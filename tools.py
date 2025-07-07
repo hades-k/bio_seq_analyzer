@@ -362,37 +362,36 @@ class MotifFinder(Tool):
     def _discover_conserved_motifs(self, sequences: List[MitochondrialDNA], k: int, threshold: int):
         motif_occurrences_details = {}
         for seq_idx, seq_obj in enumerate(sequences):
-            # Discover motifs within each sequence (min_motif_occurrences_in_sequence implicitly 1)
             kmer_counts = Counter()
             sequence = seq_obj.sequence.upper()
             for i in range(len(sequence) - k + 1):
                 kmer = sequence[i:i + k]
                 kmer_counts[kmer] += 1
-
+    
             found_motifs_in_seq = {motif: count for motif, count in kmer_counts.items() if count >= 1}
-
+    
             for motif in found_motifs_in_seq:
                 if motif not in motif_occurrences_details:
                     motif_occurrences_details[motif] = {}
-
                 motif_occurrences_details[motif][seq_idx] = self._find_motif_occurrences(sequence, motif)
-
-            conserved_motifs = []
-            for motif, seq_details in motif_occurrences_details.items():
-                if len(seq_details) >= threshold:
-                    conserved_motifs.append({
-                        'motif': motif,
-                        'sequences': [
-                            {
-                                'sequence_index': i,
-                                'sequence_name': sequences[i].name,
-                                'positions': positions
-                            }
-                            for i, positions in seq_details.items()
-                        ]
-                    })
-        
-            return conserved_motifs
+    
+    
+        conserved_motifs = []
+        for motif, seq_details in motif_occurrences_details.items():
+            if len(seq_details) >= threshold:
+                conserved_motifs.append({
+                    'motif': motif,
+                    'sequences': [
+                        {
+                            'sequence_index': i,
+                            'sequence_name': sequences[i].name,
+                            'positions': positions
+                        }
+                        for i, positions in seq_details.items()
+                    ]
+                })
+    
+        return conserved_motifs
 
     def get_result(self):
         if not self.__last_result:
