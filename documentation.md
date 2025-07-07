@@ -493,49 +493,6 @@ Compares each sequence to a reference.
 **Returns:**
 - `List[dict]`: Stats per comparison
 
-## Getting Started (Installation & Usage)
-
-To run the Bio Seq Analyzer web application locally:
-
-### 1. Clone the Repository
-```bash
-git clone https://github.com/hades-k/bio-seq-analyzer.git
-cd bio-seq-analyzer
-```
-
-### 2. Set Up a Virtual Environment (Optional but recommended)
-```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 3. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-If you don’t have a `requirements.txt` yet, create one with:
-```
-Flask
-biopython
-pandas
-matplotlib
-```
-
-### 4. Run the Application
-```bash
-python app.py
-```
-
-Navigate to [http://127.0.0.1:5000](http://127.0.0.1:5000) in your browser.
-
-### 5. Features via Web Interface
-- Upload FASTA files
-- View sequence statistics (length, GC content)
-- Motif search and k-mer discovery
-- Global & local sequence alignment
-- View plots (GC content, motif distribution)
-
 ---
 
 ## Object-Oriented Design Principles
