@@ -58,11 +58,18 @@
 {% endif %}
 
 {% if discovered %}
-  <h3 class="mt-4">Discovered Motifs</h3>
-  <ul class="list-group">
-    {% for motif in discovered %}
-      <li class="list-group-item">{{ motif }}</li>
-    {% endfor %}
-  </ul>
+  <h4 class="mt-4">Discovered Conserved Motifs</h4>
+  {% for motif in discovered %}
+    <div class="mb-3">
+      <strong>{{ motif.motif }}</strong>
+      <ul class="list-group">
+        {% for entry in motif.sequences %}
+          <li class="list-group-item">
+            {{ entry.sequence_name }}: {{ entry.positions }}
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endfor %}
 {% endif %}
 {% endblock %}
