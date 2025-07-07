@@ -190,5 +190,34 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 | `get_result()` | — | `dict` or `list` | Returns the last result |
 | `report()` | — | Console print | Prints motif search summary |
 
+### `SequenceAlignWrapper` Class
+| Method | Input | Output | Description |
+|--------|-------|--------|-------------|
+| `__init__()` | None | Instance | Initializes with a SequenceAligner |
+| `align(seq1, seq2, method='global')` | str, str, str | dict | Aligns two sequences and returns result |
+| `report()` | — | Console | Prints alignment summary |
 
+### `AlignmentVisualizer` Class
+| Method | Input | Output | Description |
+|--------|-------|--------|-------------|
+| `__init__()` | SequenceAlignWrapper | Instance | Initializes with alignment wrapper |
+| `display(idx1, idx2, sequences, method='global', width=80)` | int, int, List[MitochondrialDNA], str, int | Console output | Shows formatted alignment |
+
+### `SequenceComparer` Class
+| Method | Input | Output | Description |
+|--------|-------|--------|-------------|
+| `__init__()` | List[MitochondrialDNA] | Instance | Initialize with sequence dataset |
+| `compare_pair(idx1, idx2)` | int, int | dict | Aligns two sequences and returns stats |
+| `compare_all()` | — | List[dict] | Performs pairwise comparisons for all sequences |
+| `compare_to_reference(ref_index=0)` | int | List[dict] | Compares each sequence to the reference |
+
+## Web Interface Templates
+These Jinja2 HTML templates are used to render the front-end of the Flask application.
+
+| Template File | Purpose |
+|---------------|---------|
+| `index.html` | Page to upload a FASTA file and trigger parsing |
+| `summary.html` | Shows GC content statistics and related visualizations |
+| `motif.html` | Allows users to search for or discover motifs in sequences |
+| `align.html` | Interface for selecting and aligning two sequences |
 
