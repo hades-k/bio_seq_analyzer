@@ -52,6 +52,10 @@ class MitochondrialDNA(Sequence):
                 irregular.append(base)
         return irregular
 
+    @property
+    def name (self):
+        return self.__name
+
 
 if __name__ == "__main__":
     from tools import Parser

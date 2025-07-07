@@ -56,33 +56,6 @@ class FastaManager:
     def get_sequences(self):
         return self.mito_objs
 
-class MotifWebTool:
-    def __init__(self, mito_objs):
-        self.mito_objs = mito_objs
-        self.finder = MotifFinder()
-
-    def search_motif(self, motif):
-        results = []
-        for i, obj in enumerate(self.mito_objs):
-            res = self.finder.run(obj.sequence, motif=motif)
-            results.append({'index': i, 'name': obj._MitochondrialDNA__name, 'count': res['count'], 'positions': res['positions']})
-        return results
-
-    def discover_motifs(self, k=5, threshold=2):
-        analyzer = ConservedMotifAnalyzer(self.mito_objs)
-        return analyzer.find_conserved(k=k, threshold=threshold)
-
-class AlignmentWebTool:
-    def __init__(self, mito_objs):
-        self.mito_objs = mito_objs
-        self.comparer = SequenceComparer(mito_objs)
-
-    def align_pair(self, idx1, idx2, method='global'):
-        return self.comparer.compare_pair(idx1, idx2, method)
-
-    def all_pairwise(self):
-        return self.comparer.compare_all()
-
 fasta_manager = FastaManager()
 
 @app.route('/', methods=['GET', 'POST'])
@@ -122,15 +95,20 @@ def motif():
     results = None
     discovered = None
     if request.method == 'POST':
-        motif = request.form.get('motif')
+        motif_str = request.form.get('motif')
         k = int(request.form.get('k', 5))
         threshold = int(request.form.get('threshold', 2))
-        tool = MotifWebTool(fasta_manager.get_sequences())
-        if motif:
-            results = tool.search_motif(motif)
+        sequences = fasta_manager.get_sequences()
+        if motif_str:
+            finder = MotifFinder()
+            results = []
+            for i, obj in enumerate(sequences):
+                res = finder.run(obj.sequence, motif=motif_str)
+                results.append({'index': i, 'name': obj.name, 'count': res['count'], 'positions': res['positions']})
             fasta_manager.motif_results = results
         else:
-            discovered, _ = tool.discover_motifs(k=k, threshold=threshold)
+            analyzer = ConservedMotifAnalyzer(sequences)
+            discovered, _ = analyzer.find_conserved(k=k, threshold=threshold)
     return render_template('motif.html', results=results, discovered=discovered)
 
 @app.route('/align', methods=['GET', 'POST'])
@@ -141,8 +119,8 @@ def align():
         idx1 = int(request.form.get('seq1'))
         idx2 = int(request.form.get('seq2'))
         method = request.form.get('method', 'global')
-        tool = AlignmentWebTool(fasta_manager.get_sequences())
-        result = tool.align_pair(idx1, idx2, method)
+        comparer = SequenceComparer(fasta_manager.get_sequences())
+        result = comparer.compare_pair(idx1, idx2, method)
     return render_template('align.html', result=result, names=names)
 
 @app.route('/plot.png')
