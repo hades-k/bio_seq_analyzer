@@ -1,0 +1,23 @@
+{# templates/index.html #}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload FASTA</title>
+</head>
+<body>
+    <h1>Upload FASTA File</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+</body>
+</html>
