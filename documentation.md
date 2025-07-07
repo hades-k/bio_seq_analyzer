@@ -1,7 +1,11 @@
-is## Table of Contents
+# Project Documentation
+
+This document provides a detailed overview of the classes and methods used in the Bio Seq Analyzer project.
+
+## Table of Contents
 - [CRC Cards](#crc-cards-class-responsibility-collaborators)
 - [Description](#description)
-- [UML diamran](#uml-diagram)
+- [UML diagram](#uml-diagram)
 - [Method Documentation](#method-documentation)
   - [Sequence](#sequence-class-abstract)
   - [MitochondrialDNA](#mitochondrialdna-class)
@@ -17,12 +21,6 @@ is## Table of Contents
 - [Example Input/Output](#example-inputoutput)
 - [Object-Oriented Design Principles](#object-oriented-design-principles)
 - [Module Dependency Diagram](#module-dependency-diagram)
-
-
-
-# Project Documentation
-
-This document provides a detailed overview of the classes and methods used in the Bio Seq Analyzer project.
 
 ## CRC Cards (Class, Responsibility, Collaborators)
 
@@ -290,12 +288,13 @@ _Note: `_global_align()`, `_local_align()`, `_traceback()` are internal helper m
 ## Web Interface Templates
 These Jinja2 HTML templates are used to render the front-end of the Flask application.
 
-| Template File | Purpose |
-|---------------|---------|
-| `index.html` | Page to upload a FASTA file and trigger parsing |
-| `summary.html` | Shows GC content statistics and related visualizations |
-| `motif.html` | Allows users to search for or discover motifs in sequences |
-| `align.html` | Interface for selecting and aligning two sequences |
+| Template File             | Purpose                                                             |
+|---------------------------|---------------------------------------------------------------------|
+| `index.html`              | Page to upload a FASTA file and trigger parsing                    |
+| `summary.html`            | Shows GC content statistics and related visualizations             |
+| `motif.html`              | Allows users to search for or discover motifs in sequences         |
+| `align.html`              | Interface for selecting and aligning two sequences                 |
+| `compare_reference.html`  | Compares all sequences to a selected reference with alignment stats|
 
 ## Example Input/Output
 
@@ -528,6 +527,25 @@ Prints summary of parsed records.
 **Returns:**
 - `None`: Console output
 ## SequenceComparer
+```json
+[
+  {
+    "motif": "ATG",
+    "sequences": [
+      {
+        "sequence_index": 0,
+        "sequence_name": "Homo sapiens",
+        "positions": [102, 250]
+      },
+      {
+        "sequence_index": 2,
+        "sequence_name": "Mus musculus",
+        "positions": [74, 198]
+      }
+    ]
+  }
+]
+```
 
 ### `__init__(sequences)`
 
