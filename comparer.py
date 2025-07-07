@@ -4,8 +4,8 @@ from typing import List
 import multiprocessing
 
 class SequenceAlignWrapper:
-    def __init__(self):
-        self.aligner = SequenceAligner()
+    def __init__(self, match: int = 2, mismatch: int = -1, gap: int = -2):
+        self.aligner = SequenceAligner(match=match, mismatch=mismatch, gap=gap)
 
     def align(self, seq1: str, seq2: str, method: str = 'global'):
         self.aligner.run(seq1, seq2, method=method)
@@ -35,9 +35,9 @@ class AlignmentVisualizer:
 
 
 class SequenceComparer:
-    def __init__(self, sequences: List[MitochondrialDNA]):
+    def __init__(self, sequences: List[MitochondrialDNA], match: int = 2, mismatch: int = -1, gap: int = -2):
         self.sequences = sequences
-        self.wrapper = SequenceAlignWrapper()
+        self.wrapper = SequenceAlignWrapper(match=match, mismatch=mismatch, gap=gap)
 
     def compare_pair(self, idx1: int, idx2: int, method: str = 'global'):
         return self.wrapper.align(self.sequences[idx1].sequence, self.sequences[idx2].sequence, method)
