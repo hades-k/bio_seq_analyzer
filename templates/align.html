@@ -44,12 +44,6 @@
     <p><strong>Mismatches:</strong> {{ result.mismatch_count }}</p>
     <p><strong>Gaps:</strong> {{ result.gap_count }}</p>
 
-    {% set result = result | combine({
-        'aligned_seq1': result.aligned_seq1 | join(''),
-        'aligned_seq2': result.aligned_seq2 | join(''),
-        'matches': result.matches | join('')
-    }) %}
-
     <div style="font-family: monospace; white-space: pre;">
       {% for i in range(0, result.aligned_seq1|length, 80) %}
         {{ result.aligned_seq1[i:i+80] }}<br>
