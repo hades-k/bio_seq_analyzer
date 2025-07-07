@@ -115,6 +115,8 @@ def motif():
 def align():
     result = None
     names = fasta_manager.get_names()
+    idx1 = None
+    idx2 = None
     if request.method == 'POST':
         idx1 = int(request.form.get('seq1'))
         idx2 = int(request.form.get('seq2'))
@@ -125,7 +127,8 @@ def align():
             result['aligned_seq1'] = "".join(result['aligned_seq1'])
             result['aligned_seq2'] = "".join(result['aligned_seq2'])
             result['matches'] = "".join(result['matches'])
-    return render_template('align.html', result=result, names=names, enumerate=enumerate, seq1_idx=idx1, seq2_idx=idx2)
+    return render_template('align.html', result=result, names=names, enumerate=enumerate,
+                           seq1_idx=idx1, seq2_idx=idx2)
 
 @app.route('/plot.png')
 def plot_png():
