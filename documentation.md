@@ -1,6 +1,7 @@
 ## Table of Contents
 - [CRC Cards](#crc-cards-class-responsibility-collaborators)
 - [Description](#description)
+- [UML diamran](#uml-diagram)
 - [Method Documentation](#method-documentation)
   - [Sequence](#sequence-class)
   - [MitochondrialDNA](#mitochondrialdna-class)
@@ -160,6 +161,11 @@ This document provides a detailed overview of the classes and methods used in th
 
 ## Description
 This software models mitochondrial DNA using a modular and extensible object-oriented design. Sequences are loaded from FASTA files via the `Parser` class and represented as `MitochondrialDNA` objects. Users can extract statistics (e.g., GC content), search for motifs, and perform sequence alignments. Classes like `SequenceAligner` and `MotifFinder` inherit a shared interface from `Tool`. `SequenceComparer` and `MultiAligner` offer comparative insights across datasets. All components are designed for reuse, extensibility, and clear separation of responsibilities.
+
+
+## UML diagram 
+
+<img src = 'https://github.com/hades-k/bio_seq_analyzer/blob/main/UML-diagram.png'>
 
 ## Method Documentation
 
