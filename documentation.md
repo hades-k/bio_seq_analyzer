@@ -1,4 +1,4 @@
-## Table of Contents
+is## Table of Contents
 - [CRC Cards](#crc-cards-class-responsibility-collaborators)
 - [Description](#description)
 - [UML diamran](#uml-diagram)
@@ -519,3 +519,15 @@ This promotes reuse and shared structure across tools.
 
 ### ✔ Polymorphism
 Generic interfaces (`run()`, `report()`) allow tools like `Parser`, `MotifFinder`, and `SequenceAligner` to be used interchangeably in pipelines and the frontend.
+
+## Module Dependency Diagram
+
+```mermaid
+graph TD
+    app.py --> comparer.py
+    app.py --> sequence.py
+    app.py --> tools.py
+    comparer.py --> sequence.py
+    comparer.py --> tools.py
+    tools.py --> sequence.py
+```
