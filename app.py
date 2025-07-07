@@ -125,7 +125,7 @@ def align():
             result['aligned_seq1'] = "".join(result['aligned_seq1'])
             result['aligned_seq2'] = "".join(result['aligned_seq2'])
             result['matches'] = "".join(result['matches'])
-    return render_template('align.html', result=result, names=names, enumerate=enumerate)
+    return render_template('align.html', result=result, names=names, enumerate=enumerate, seq1_idx=idx1, seq2_idx=idx2)
 
 @app.route('/plot.png')
 def plot_png():

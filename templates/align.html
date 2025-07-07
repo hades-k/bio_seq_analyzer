@@ -30,6 +30,8 @@
   {% if result %}
     <hr>
     <h2>Alignment Result</h2>
+    <p><strong>Sequence 1:</strong> {{ names[seq1_idx] }}</p>
+    <p><strong>Sequence 2:</strong> {{ names[seq2_idx] }}</p>
     <p><strong>Type:</strong> {{ result.type.capitalize() }}</p>
     <p><strong>Score:</strong> {{ result.score }}</p>
     <p><strong>Matches:</strong> {{ result.match_count }}</p>
