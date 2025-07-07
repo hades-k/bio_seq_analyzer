@@ -59,6 +59,8 @@ class FastaManager:
     def get_sequences(self):
         return self.datasets[self.current_file]['sequences']
 
+fasta_manager = FastaManager()
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -90,6 +92,12 @@ def summary():
     gc_contents = fasta_manager.get_gc_contents()
     names = fasta_manager.get_names()
     return render_template('summary.html', stats=stats, names=names, gc_contents=gc_contents, zip=zip)
+
+@app.route('/set_file', methods=['POST'])
+def set_file():
+    filename = request.form.get('filename')
+    fasta_manager.set_current_file(filename)
+    return redirect(url_for('summary'))
 
 @app.route('/motif', methods=['GET', 'POST'])
 def motif():
