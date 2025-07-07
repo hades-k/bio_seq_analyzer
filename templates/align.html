@@ -1,4 +1,3 @@
-<!-- templates/align.html -->
 {% extends "base.html" %}
 {% block content %}
   <h1>Pairwise Alignment</h1>
@@ -24,19 +23,32 @@
       <option value="local">Local</option>
     </select>
 
+    <label for="match">Match Score:</label>
+    <input type="number" name="match" value="2">
+
+    <label for="mismatch">Mismatch Penalty:</label>
+    <input type="number" name="mismatch" value="-1">
+
+    <label for="gap">Gap Penalty:</label>
+    <input type="number" name="gap" value="-2">
+
     <button type="submit">Align</button>
   </form>
 
   {% if result %}
     <hr>
     <h2>Alignment Result</h2>
-    <p><strong>Sequence 1:</strong> {{ names[seq1_idx] }}</p>
-    <p><strong>Sequence 2:</strong> {{ names[seq2_idx] }}</p>
     <p><strong>Type:</strong> {{ result.type.capitalize() }}</p>
     <p><strong>Score:</strong> {{ result.score }}</p>
     <p><strong>Matches:</strong> {{ result.match_count }}</p>
     <p><strong>Mismatches:</strong> {{ result.mismatch_count }}</p>
     <p><strong>Gaps:</strong> {{ result.gap_count }}</p>
+
+    {% set result = result | combine({
+        'aligned_seq1': result.aligned_seq1 | join(''),
+        'aligned_seq2': result.aligned_seq2 | join(''),
+        'matches': result.matches | join('')
+    }) %}
 
     <div style="font-family: monospace; white-space: pre;">
       {% for i in range(0, result.aligned_seq1|length, 80) %}
