@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <h2>Summary Statistics</h2>
+<p><strong>Currently loaded file:</strong> {{ fasta_manager.current_file }}</p>
 <ul class="list-group">
   <li class="list-group-item">Total Sequences: {{ stats.count }}</li>
   <li class="list-group-item">Min Length: {{ stats.min_length }}</li>

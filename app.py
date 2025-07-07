@@ -19,42 +19,45 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 class FastaManager:
     def __init__(self):
-        self.df = None
-        self.records = None
-        self.mito_objs = []
-        self.motif_results = None
+        self.datasets = {}  # {filename: list of MitochondrialDNA objects}
+        self.current_file = None
 
     def parse(self, filepath):
         parser = Parser('fasta')
-        self.df = parser.run(filepath)
-        self.records = self.df
-        self.mito_objs = [MitochondrialDNA(self.df.loc[i]) for i in range(len(self.df))]
-        return self.df
+        df = parser.run(filepath)
+        mito_objs = [MitochondrialDNA(df.loc[i]) for i in range(len(df))]
+        filename = os.path.basename(filepath)
+        self.datasets[filename] = {
+            'df': df,
+            'sequences': mito_objs
+        }
+        self.current_file = filename
+        return df
+
+    def set_current_file(self, filename):
+        if filename in self.datasets:
+            self.current_file = filename
 
     def get_stats(self):
-        if self.df is None:
+        if not self.current_file:
             return {}
-        lengths = self.df['length']
-        stats = {
-            'count': len(self.df),
+        df = self.datasets[self.current_file]['df']
+        lengths = df['length']
+        return {
+            'count': len(df),
             'min_length': lengths.min(),
             'max_length': lengths.max(),
-            'mean_length': lengths.mean(),
+            'mean_length': lengths.mean()
         }
-        return stats
 
     def get_gc_contents(self):
-        if not self.mito_objs:
-            return []
-        return [obj.gc_content for obj in self.mito_objs]
+        return [obj.gc_content for obj in self.datasets[self.current_file]['sequences']]
 
     def get_names(self):
-        if self.df is None:
-            return []
-        return list(self.df['name'])
+        return list(self.datasets[self.current_file]['df']['name'])
 
     def get_sequences(self):
-        return self.mito_objs
+        return self.datasets[self.current_file]['sequences']
 
 fasta_manager = FastaManager()
 
@@ -89,6 +92,12 @@ def summary():
     gc_contents = fasta_manager.get_gc_contents()
     names = fasta_manager.get_names()
     return render_template('summary.html', stats=stats, names=names, gc_contents=gc_contents, zip=zip)
+
+@app.route('/set_file', methods=['POST'])
+def set_file():
+    filename = request.form.get('filename')
+    fasta_manager.set_current_file(filename)
+    return redirect(url_for('summary'))
 
 @app.route('/motif', methods=['GET', 'POST'])
 def motif():
