@@ -18,8 +18,9 @@ This software models mitochondrial DNA using a modular and extensible object-ori
   - [FastaManager](#fastamanager-class)
 - [Web Interface Templates](#web-interface-templates)
 - [Example Input/Output](#example-inputoutput)
-- [Object-Oriented Design Principles](#object-oriented-design-principles)
 - [Module Dependency Diagram](#module-dependency-diagram)
+- [Object-Oriented Design Principles](#object-oriented-design-principles)
+
 
 ## CRC Cards (Class, Responsibility, Collaborators)
 
@@ -581,6 +582,18 @@ Compares each sequence to a reference.
 
 ---
 
+## Module Dependency Diagram
+
+```mermaid
+graph TD
+    app.py --> comparer.py
+    app.py --> sequence.py
+    app.py --> tools.py
+    comparer.py --> sequence.py
+    comparer.py --> tools.py
+    tools.py --> sequence.py
+```
+
 ## Object-Oriented Design Principles
 
 This project is structured around modern OOP principles:
@@ -600,14 +613,4 @@ This promotes reuse and shared structure across tools.
 ### ✔ Polymorphism
 Generic interfaces (`run()`, `report()`) allow tools like `Parser`, `MotifFinder`, and `SequenceAligner` to be used interchangeably in pipelines and the frontend.
 
-## Module Dependency Diagram
 
-```mermaid
-graph TD
-    app.py --> comparer.py
-    app.py --> sequence.py
-    app.py --> tools.py
-    comparer.py --> sequence.py
-    comparer.py --> tools.py
-    tools.py --> sequence.py
-```
