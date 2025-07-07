@@ -131,6 +131,8 @@ def align():
         seq2 = fasta_manager.get_sequences()[idx2].sequence
         aligner.run(seq1, seq2, method)
         result = aligner.get_alignment_data()
+        result['seq1_name'] = names[idx1]
+        result['seq2_name'] = names[idx2]
 
         # Pre-join for template
         result['aligned_seq1'] = ''.join(result['aligned_seq1'])

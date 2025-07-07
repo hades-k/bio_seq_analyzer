@@ -21,7 +21,7 @@
     <select name="method">
       <option value="global">Global</option>
       <option value="local">Local</option>
-    </select>
+    </select><br><br>
 
     <label for="match">Match Score:</label>
     <input type="number" name="match" value="2">
@@ -31,6 +31,7 @@
 
     <label for="gap">Gap Penalty:</label>
     <input type="number" name="gap" value="-2">
+    <br><br>
 
     <button type="submit">Align</button>
   </form>
@@ -38,6 +39,7 @@
   {% if result %}
     <hr>
     <h2>Alignment Result</h2>
+    <p><strong>Alignment between:</strong> {{ result.seq1_name }} and {{ result.seq2_name }}</p>
     <p><strong>Type:</strong> {{ result.type.capitalize() }}</p>
     <p><strong>Score:</strong> {{ result.score }}</p>
     <p><strong>Matches:</strong> {{ result.match_count }}</p>
