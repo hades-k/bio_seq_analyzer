@@ -61,14 +61,6 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-If you don’t have a `requirements.txt` yet, create one with:
-```
-Flask
-biopython
-pandas
-matplotlib
-```
-
 ### 4. Run the Application
 ```bash
 python app.py
