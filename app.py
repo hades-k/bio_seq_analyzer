@@ -265,7 +265,10 @@ def motif_histogram_png():
 
 @app.route('/heatmap_view')
 def heatmap_view():
-    return render_template_string(base_html_py, content='<h2>Alignment Heatmap</h2><img src="/heatmap.png" class="img-fluid">')
+    return render_template_string(base_html_py, content="""
+        <h2>Alignment Heatmap</h2>
+        <img src="/static/heatmap_output.png" class="img-fluid" alt="Alignment Heatmap">
+    """)
 
 @app.route('/heatmap.png')
 def heatmap_png():
@@ -278,7 +281,7 @@ def heatmap_png():
         return "", 400
 
     try:
-        max_seqs = min(10, len(sequences))
+        max_seqs = len(sequences)
         sequences = sequences[:max_seqs]
         names = names[:max_seqs]
 
