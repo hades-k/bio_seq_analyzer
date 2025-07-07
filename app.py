@@ -81,7 +81,7 @@ def index():
         else:
             flash('Invalid file type!')
             return redirect(request.url)
-    return render_template('index.html')
+    return render_template('index.html', fasta_manager=fasta_manager)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -91,7 +91,7 @@ def summary():
     stats = fasta_manager.get_stats()
     gc_contents = fasta_manager.get_gc_contents()
     names = fasta_manager.get_names()
-    return render_template('summary.html', stats=stats, names=names, gc_contents=gc_contents, zip=zip)
+    return render_template('summary.html', stats=stats, names=names, gc_contents=gc_contents, fasta_manager=fasta_manager, zip=zip)
 
 @app.route('/set_file', methods=['POST'])
 def set_file():
