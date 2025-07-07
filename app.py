@@ -265,28 +265,17 @@ def motif_histogram_png():
 
 @app.route('/heatmap_view')
 def heatmap_view():
-    return render_template_string(base_html_py, content="""
-        <h2>Alignment Heatmap</h2>
-        <img src="/static/heatmap_output.png" class="img-fluid" alt="Alignment Heatmap">
-    """)
-
-@app.route('/heatmap.png')
-def heatmap_png():
-    print("Starting heatmap generation...")
     sequences = fasta_manager.get_sequences()
     names = fasta_manager.get_names()
 
     if not sequences or len(sequences) < 2:
-        print("Not enough sequences to generate heatmap.")
-        return "", 400
+        return render_template_string(base_html_py, content="<p>Not enough sequences to generate heatmap.</p>")
 
     try:
-        max_seqs = len(sequences)
-        sequences = sequences[:max_seqs]
-        names = names[:max_seqs]
-
         aligner = MultiAligner(sequences)
+        print(f"Starting pairwise alignment for {len(sequences)} sequences...")
         score_map = aligner.pairwise_scores()
+        print("Pairwise alignment complete.")
 
         n = len(sequences)
         matrix = np.zeros((n, n))
@@ -303,14 +292,17 @@ def heatmap_png():
         fig.colorbar(im, ax=ax, label='Alignment Score')
         plt.tight_layout()
 
-        # Save to file instead of memory
-        out_path = "static/heatmap_output.png"
-        fig.savefig(out_path)
-        print(f"Heatmap saved to {out_path}")
-        return redirect(f"/{out_path}")
+        os.makedirs("static", exist_ok=True)
+        fig.savefig("static/heatmap_output.png")
+        print("Heatmap saved to static/heatmap_output.png")
+
+        return render_template_string(base_html_py, content="""
+            <h2>Alignment Heatmap</h2>
+            <img src="/static/heatmap_output.png" class="img-fluid" alt="Alignment Heatmap">
+        """)
     except Exception as e:
         print(f"Heatmap generation failed: {e}")
-        return "", 500
+        return render_template_string(base_html_py, content=f"<p>Error: {e}</p>")
       
 if __name__ == '__main__':
   app.run(debug=True)
