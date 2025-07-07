@@ -115,20 +115,24 @@ def motif():
 def align():
     result = None
     names = fasta_manager.get_names()
-    idx1 = None
-    idx2 = None
     if request.method == 'POST':
         idx1 = int(request.form.get('seq1'))
         idx2 = int(request.form.get('seq2'))
         method = request.form.get('method', 'global')
-        comparer = SequenceComparer(fasta_manager.get_sequences())
-        result = comparer.compare_pair(idx1, idx2, method)
-        if result:
-            result['aligned_seq1'] = "".join(result['aligned_seq1'])
-            result['aligned_seq2'] = "".join(result['aligned_seq2'])
-            result['matches'] = "".join(result['matches'])
-    return render_template('align.html', result=result, names=names, enumerate=enumerate,
-                           seq1_idx=idx1, seq2_idx=idx2)
+
+        # New: custom scoring
+        match = int(request.form.get('match', 2))
+        mismatch = int(request.form.get('mismatch', -1))
+        gap = int(request.form.get('gap', -2))
+
+        from tools import SequenceAligner
+        aligner = SequenceAligner(match=match, mismatch=mismatch, gap=gap)
+        seq1 = fasta_manager.get_sequences()[idx1].sequence
+        seq2 = fasta_manager.get_sequences()[idx2].sequence
+        aligner.run(seq1, seq2, method)
+        result = aligner.get_alignment_data()
+
+    return render_template('align.html', result=result, names=names)
 
 @app.route('/plot.png')
 def plot_png():
