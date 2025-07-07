@@ -70,29 +70,3 @@ class SequenceComparer:
                 'gaps': data['gap_count']
             })
         return results
-
-    
-
-
-class MultiAligner:
-    def __init__(self, sequences):
-        self.sequences = sequences
-
-    def _score_pair(self, pair):
-        i, j = pair
-        seq1 = self.sequences[i].sequence
-        seq2 = self.sequences[j].sequence
-        aligner = SequenceAligner()
-        aligner.run(seq1, seq2)
-        return ((i, j), aligner.get_alignment_data()['score'])
-
-    def pairwise_scores(self):
-        n = len(self.sequences)
-        pairs = [(i, j) for i in range(n) for j in range(i + 1, n)]
-        print(f"Starting multiprocessing for {len(pairs)} pairwise alignments...")
-
-        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
-            results = pool.map(self._score_pair, pairs)
-
-        print("Pairwise alignment complete.")
-        return dict(results)
