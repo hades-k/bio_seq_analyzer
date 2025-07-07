@@ -1,31 +1,28 @@
 # BioSeq Analyzer
 
 ## Project Overview
-This project is a modular software solution for analyzing mitochondrial DNA (mtDNA) sequences from multiple species. It is designed using object-oriented programming (OOP) principles and provides both a command-line and a web-based interface (using Flask) for genomic data analysis.
-
-The main goals are:
-- Parse and organize FASTA files containing mtDNA sequences.
-- Represent mitochondrial DNA and motifs as objects.
-- Perform sequence analysis (GC content, motif search, alignments).
-- Compare sequences and visualize results.
-- Provide an easy-to-use web interface for all main functionalities.
+BioSeq Analyzer is a modular software solution for analyzing mitochondrial DNA (mtDNA) sequences. Built with object-oriented programming (OOP) principles, it offers both command-line and web-based interfaces (using Flask) for genomic data analysis. Key functionalities include parsing FASTA files, representing DNA sequences and motifs as objects, performing sequence analysis (GC content, motif search, alignments), and comparing sequences.
 
 ---
 
 ## Project Structure
 
 ```
-├── app.py                # Flask web application (Part 4)
-├── tools.py              # Parsing, alignment, and motif-finding tools (Parts 1 & 2)
-├── sequence.py           # MitochondrialDNA and sequence representation (Part 2)
-├── comparer.py           # High-level analysis and integration (Part 3)
+├── app.py                # Flask web application
+├── tools.py              # Parsing, alignment, and motif-finding tools
+├── sequence.py           # MitochondrialDNA and sequence representation
+├── comparer.py           # High-level analysis and integration
 ├── templates/            # HTML templates for the web interface
-│   ├── index.html
-│   ├── summary.html
-│   ├── motif.html
 │   ├── align.html
-│   └── pairwise.html
+│   ├── base.html
+│   ├── index.html
+│   ├── motif.html
+│   └── summary.html
+├── uploads/              # Directory for uploaded FASTA files
+├── P04637.fasta          # Example FASTA file
 ├── synthetic_mtDNA_dataset.fasta  # Example input file
+├── requirements.txt      # Python dependencies
+├── documentation.md      # Project documentation
 └── README.md             # This file
 ```
 
@@ -33,48 +30,22 @@ The main goals are:
 
 ## How to Run the Web App
 
-1. **Install dependencies:**
-   - Make sure you have Python 3 and `pip` installed.
-   - Install required packages:
-     ```bash
-     pip install flask pandas biopython numpy
-     ```
+1.  **Install dependencies:**
+    -   Ensure Python 3 and `pip` are installed.
+    -   Install required packages using `pip`:
+        ```bash
+        pip install -r requirements.txt
+        ```
 
-2. **Start the Flask app:**
-   ```bash
-   python app.py
-   ```
-   The app will run on `http://127.0.0.1:5000/` by default.
+2.  **Start the Flask app:**
+    ```bash
+    python app.py
+    ```
+    The application will typically run on `http://127.0.0.1:5000/` by default.
 
-3. **Open your browser:**
-   - Go to `http://127.0.0.1:5000/`
-   - Upload a FASTA file and explore the analysis features.
-
----
-
-## Code Explanation
-
-### Part 1: Parsing the Input (`tools.py`)
-- **Parser class:** Reads FASTA files and stores the data in a Pandas DataFrame. It extracts sequence IDs, descriptions, and sequences, and calculates sequence lengths. The parser is reusable for other formats supported by Biopython.
-
-### Part 2: Genomic Representation and Analysis
-- **MitochondrialDNA class (`sequence.py`):** Represents a single mtDNA sequence. Provides methods to get the sequence, its length, GC content, extract subsequences, and find irregular bases.
-- **MotifFinder class (`tools.py`):** Finds specific motifs or discovers frequent k-mers in a sequence. Can search for a motif or discover conserved motifs based on frequency.
-- **SequenceAligner class (`tools.py`):** Performs global or local pairwise sequence alignment. Returns alignment score, matches, mismatches, and gaps.
-
-### Part 3: Integration of Analytical Capabilities (`comparer.py`)
-- **SequenceComparer:** Compares all pairs of sequences or compares each sequence to a reference. Uses the alignment tools to generate scores and statistics.
-- **ConservedMotifAnalyzer:** Finds motifs that are conserved (present in all sequences) using the MotifFinder.
-- **AlignmentVisualizer:** (for command-line use) Prints alignments in a readable format.
-
-### Part 4: User Interface (`app.py` and `templates/`)
-- **app.py:** Implements the Flask web app. Uses OOP controller classes to manage parsing, motif analysis, and alignments. Handles file uploads, user input, and routes for each feature.
-- **HTML templates:**
-  - `index.html`: Upload a FASTA file.
-  - `summary.html`: View sequence statistics and GC content.
-  - `motif.html`: Search for motifs or discover conserved motifs.
-  - `align.html`: Perform and view pairwise alignments.
-  - `pairwise.html`: See all pairwise alignment scores.
+3.  **Access in browser:**
+    -   Open your web browser and navigate to the address provided in the terminal (e.g., `http://127.0.0.1:5000/`).
+    -   Upload a FASTA file and explore the analysis features.
 
 ---
 
@@ -87,14 +58,20 @@ The main goals are:
 
 ---
 
+## Documentation
+
+Full documentation can be found [here](https://github.com/hades-k/bio_seq_analyzer/blob/main/documentation.md)
+
+---
+
 ## Notes
-- The code is written to be clear and modular, following OOP principles like encapsulation, inheritance, and abstraction.
-- You can extend the system by adding new analysis tools or web features easily.
-- For any issues, check the terminal for error messages or use the command-line interface in the modules for debugging.
+- The code is designed to be modular and follows OOP principles.
+- The system can be extended with new analysis tools or web features.
+- For debugging, check terminal error messages or use the command-line interface of individual modules.
 
 ---
 
 ## Credits
 - Developed for Advanced Programming 2024/2025
-- Project Specification: Andrea Giovanni Nuzzolese
-- Author: [Your Name Here] 
+- Professor: Andrea Giovanni Nuzzolese
+- Authors: Salma Maria Mede, Aidana Kaukenova
