@@ -5,14 +5,14 @@
   <form method="post">
     <label for="seq1">Sequence 1:</label>
     <select name="seq1">
-      {% for i, name in enumerate(names) %}
+      {% for i, name in indexed_names %}
         <option value="{{ i }}">{{ name }}</option>
       {% endfor %}
     </select>
 
     <label for="seq2">Sequence 2:</label>
     <select name="seq2">
-      {% for i, name in enumerate(names) %}
+      {% for i, name in indexed_names %}
         <option value="{{ i }}">{{ name }}</option>
       {% endfor %}
     </select>
