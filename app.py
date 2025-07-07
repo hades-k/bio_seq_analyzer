@@ -119,17 +119,14 @@ def align():
         idx2 = int(request.form.get('seq2'))
         method = request.form.get('method', 'global')
 
-        # Get custom scoring
+        
+
         match = int(request.form.get('match', 2))
         mismatch = int(request.form.get('mismatch', -1))
         gap = int(request.form.get('gap', -2))
 
-        from tools import SequenceAligner
-        aligner = SequenceAligner(match=match, mismatch=mismatch, gap=gap)
-        seq1 = fasta_manager.get_sequences()[idx1].sequence
-        seq2 = fasta_manager.get_sequences()[idx2].sequence
-        aligner.run(seq1, seq2, method)
-        result = aligner.get_alignment_data()
+        comparer = SequenceComparer(fasta_manager.get_sequences(), match=match, mismatch=mismatch, gap=gap)
+        result = comparer.compare_pair(idx1, idx2, method)
         result['seq1_name'] = names[idx1]
         result['seq2_name'] = names[idx2]
 
