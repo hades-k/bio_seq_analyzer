@@ -156,7 +156,8 @@ This document provides a detailed overview of the classes and methods used in th
 
 ---
 
-
+## Description
+This software models mitochondrial DNA using a modular and extensible object-oriented design. Sequences are loaded from FASTA files via the `Parser` class and represented as `MitochondrialDNA` objects. Users can extract statistics (e.g., GC content), search for motifs, and perform sequence alignments. Classes like `SequenceAligner` and `MotifFinder` inherit a shared interface from `Tool`. `SequenceComparer` and `MultiAligner` offer comparative insights across datasets. All components are designed for reuse, extensibility, and clear separation of responsibilities.
 
 ## Method Documentation
 
@@ -180,5 +181,12 @@ This document provides a detailed overview of the classes and methods used in th
 | `get_subsequence(start, end)` | `start`: `int`, `end`: `int` | The subsequence: `str` | `sub = dna.get_subsequence(10, 50)` |
 | `find_irregular_bases()` | None | A list of non-standard bases found: `list[str]` | `irregulars = dna.find_irregular_bases()` |
 | `name` (property) | None | The name of the sequence: `str` | `name = dna.name` |
+
+### 'MotifFinder' Class
+| Method | Input | Output | Description |
+|--------|-------|--------|-------------|
+| `run()` | List[MitochondrialDNA], motif:str or (k:int, threshold:int) | dict or list | Searches for motif or discovers k-mers |
+| `get_result()` | — | dict or list | Returns the last motif result |
+| `report()` | — | Console | Prints search summary |
 
 
