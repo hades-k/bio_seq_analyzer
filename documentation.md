@@ -182,7 +182,7 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 | `find_irregular_bases()` | None | A list of non-standard bases found: `list[str]` | `irregulars = dna.find_irregular_bases()` |
 | `name` (property) | None | The name of the sequence: `str` | `name = dna.name` |
 
-### 'MotifFinder' Class
+### MotifFinder Class
 | Method | Input | Output | Description |
 |--------|-------|--------|-------------|
 | `run()` | List[MitochondrialDNA], motif:str or (k:int, threshold:int) | dict or list | Searches for motif or discovers k-mers |
