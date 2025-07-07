@@ -3,12 +3,16 @@ is## Table of Contents
 - [Description](#description)
 - [UML diamran](#uml-diagram)
 - [Method Documentation](#method-documentation)
-  - [Sequence](#sequence-class)
+  - [Sequence](#sequence-class-abstract)
   - [MitochondrialDNA](#mitochondrialdna-class)
   - [MotifFinder](#motiffinder-class)
   - [SequenceAlignWrapper](#sequencealignwrapper-class)
   - [AlignmentVisualizer](#alignmentvisualizer-class)
   - [SequenceComparer](#sequencecomparer-class)
+  - [Parser](#parser-class)
+  - [Tool](#tool-class-abstract)
+  - [SequenceAligner](#sequencealigner-class)
+  - [FastaManager](#fastamanager-class)
 - [Web Interface Templates](#web-interface-templates)
 - [Object-Oriented Design Principles](#object-oriented-design-principles)
 - [Module Dependency Diagram](#module-dependency-diagram)
@@ -173,55 +177,114 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 ## Method Documentation
 
-### `Sequence` Class
+### `Sequence` Class (Abstract)
 
-| Method/Property | Input | Output | Example |
-| :--- | :--- | :--- | :--- |
-| `__init__(df)` | `df`: pandas DataFrame row | Initializes the abstract base class. | `seq_obj = Sequence(df_row)` |
-| `sequence` (abstract property) | None | The biological sequence: `str` | `seq = seq_obj.sequence` |
-| `length` (abstract property) | None | Length of the sequence: `int` | `l = seq_obj.length` |
+| Method/Property     | Input                   | Output                         | 
+|---------------------|--------------------------|---------------------------------|
+| `__init__(df)`      | `df`: pandas DataFrame row | Initializes the abstract base class. | 
+| `sequence` (abstract property) | None             | The biological sequence: `str` | 
+| `length` (abstract property)   | None             | Length of the sequence: `int`  | 
 
+---
 
 ### `MitochondrialDNA` Class
 
-| Method/Property | Input | Output | Example |
-| :--- | :--- | :--- | :--- |
-| `__init__(df)` | `df`: pandas DataFrame row | A `MitochondrialDNA` object | `dna = MitochondrialDNA(df_row)` |
-| `sequence` (property) | None | The DNA sequence: `str` | `seq = dna.sequence` |
-| `length` (property) | None | Length of the sequence: `int` | `l = dna.length` |
-| `gc_content` (property) | None | Percentage of GC content: `float` | `gc = dna.gc_content` |
-| `get_subsequence(start, end)` | `start`: `int`, `end`: `int` | The subsequence: `str` | `sub = dna.get_subsequence(10, 50)` |
-| `find_irregular_bases()` | None | A list of non-standard bases found: `list[str]` | `irregulars = dna.find_irregular_bases()` |
-| `name` (property) | None | The name of the sequence: `str` | `name = dna.name` |
+| Method/Property         | Input             | Output                           |
+|-------------------------|------------------|-----------------------------------|
+| `__init__(df)`          | `df`: DataFrame row | A `MitochondrialDNA` object     | 
+| `sequence`              | None              | The DNA sequence: `str`          | 
+| `length`                | None              | Length of the sequence: `int`    | 
+| `gc_content`            | None              | Percentage of GC content: `float`| 
+| `get_subsequence(start, end)` | `start`: int, `end`: int | Subsequence: `str`     | 
+| `find_irregular_bases()`| None              | List of non-standard bases: `list[str]` | 
+| `name`                  | None              | The name of the sequence: `str`  | 
+
+---
 
 ### `MotifFinder` Class
 
-| Method/Property | Input | Output | Description |
-|------------------|--------|--------|-------------|
-| `run()` | `List[MitochondrialDNA], motif:str` or `(k:int, threshold:int)` | `dict` or `list` | Searches for specific motifs or discovers k-mers |
-| `get_result()` | — | `dict` or `list` | Returns the last result |
-| `report()` | — | Console print | Prints motif search summary |
+| Method/Property        | Input                                   | Output               | Description                                     |
+|------------------------|------------------------------------------|----------------------|-------------------------------------------------|
+| `run()`                | `List[MitochondrialDNA], motif:str` or `(k:int, threshold:int)` | `dict` or `list` | Searches for specific motifs or discovers k-mers |
+| `get_result()`         | —                                       | `dict` or `list`     | Returns the last result                        |
+| `report()`             | —                                       | Console print        | Prints motif search summary                    |
+
+---
 
 ### `SequenceAlignWrapper` Class
-| Method | Input | Output | Description |
-|--------|-------|--------|-------------|
-| `__init__()` | None | Instance | Initializes with a SequenceAligner |
-| `align(seq1, seq2, method='global')` | str, str, str | dict | Aligns two sequences and returns result |
-| `report()` | — | Console | Prints alignment summary |
+
+| Method             | Input                                | Output   | Description                                  |
+|--------------------|---------------------------------------|----------|----------------------------------------------|
+| `__init__()`       | None                                  | Instance | Initializes with a SequenceAligner           |
+| `align()`          | `seq1`: str, `seq2`: str, `method`: str = 'global' | dict    | Aligns two sequences and returns result      |
+| `report()`         | —                                     | Console  | Prints alignment summary                     |
+
+---
 
 ### `AlignmentVisualizer` Class
-| Method | Input | Output | Description |
-|--------|-------|--------|-------------|
-| `__init__()` | SequenceAlignWrapper | Instance | Initializes with alignment wrapper |
-| `display(idx1, idx2, sequences, method='global', width=80)` | int, int, List[MitochondrialDNA], str, int | Console output | Shows formatted alignment |
+
+| Method             | Input                                                  | Output         | Description                                   |
+|--------------------|--------------------------------------------------------|----------------|-----------------------------------------------|
+| `__init__()`       | `SequenceAlignWrapper`                                 | Instance       | Initializes with alignment wrapper            |
+| `display()`        | `idx1`, `idx2`: int, `sequences`: List[MitochondrialDNA], `method`: str = 'global', `width`: int = 80 | Console output | Shows formatted alignment                     |
+
+---
 
 ### `SequenceComparer` Class
-| Method | Input | Output | Description |
-|--------|-------|--------|-------------|
-| `__init__()` | List[MitochondrialDNA] | Instance | Initialize with sequence dataset |
-| `compare_pair(idx1, idx2)` | int, int | dict | Aligns two sequences and returns stats |
-| `compare_all()` | — | List[dict] | Performs pairwise comparisons for all sequences |
-| `compare_to_reference(ref_index=0)` | int | List[dict] | Compares each sequence to the reference |
+
+| Method                 | Input                                  | Output        | Description                                      |
+|------------------------|-----------------------------------------|---------------|--------------------------------------------------|
+| `__init__()`           | `sequences`: List[MitochondrialDNA]     | Instance      | Initializes with sequence dataset                |
+| `compare_pair()`       | `idx1`, `idx2`: int                     | dict          | Aligns two sequences and returns stats           |
+| `compare_all()`        | —                                       | List[dict]    | Performs pairwise comparisons for all sequences  |
+| `compare_to_reference()` | `ref_index`: int = 0                  | List[dict]    | Compares each sequence to the reference one      |
+
+---
+
+### `Parser` Class
+
+| Method                 | Input                                     | Output                        | Description                                      |
+|------------------------|--------------------------------------------|-------------------------------|--------------------------------------------------|
+| `__init__(format='fasta')` | `format`: str                          | Instance                      | Initializes parser with file format              |
+| `run()`                | `file_path`: str, `return_objects`: bool = False | DataFrame or List[MitochondrialDNA] | Parses file and returns data            |
+| `save_to_csv()`        | `output_path`: str (optional)             | None                          | Saves parsed data to CSV                         |
+| `report()`             | `print_header`: bool = True               | Console output                | Prints parsing summary                           |
+
+---
+
+### `Tool` Class (Abstract)
+
+| Method      | Input | Output | Description                       |
+|-------------|--------|--------|-----------------------------------|
+| `run()`     | —      | Abstract | Must be implemented in subclass |
+| `report()`  | —      | Abstract | Must be implemented in subclass |
+
+---
+
+### `SequenceAligner` Class
+
+| Method                  | Input                                                | Output        | Description                                      |
+|-------------------------|------------------------------------------------------|---------------|--------------------------------------------------|
+| `__init__()`            | `match`: int = 2, `mismatch`: int = -1, `gap`: int = -2, `show_matrix`: bool = False | Instance | Initializes aligner settings                     |
+| `run()`                 | `seq1`, `seq2`: str, `method`: str = 'global'        | None          | Runs selected alignment algorithm                |
+| `get_alignment_data()` | —                                                    | dict          | Returns dictionary with alignment results        |
+| `report()`              | `width`: int = 50, `print_alignment`: bool = True    | Console output | Displays alignment result                        |
+
+_Note: `_global_align()`, `_local_align()`, `_traceback()` are internal helper methods and usually not exposed in public docs._
+
+---
+
+### `FastaManager` Class
+
+| Method              | Input            | Output             | Description                                        |
+|---------------------|------------------|---------------------|----------------------------------------------------|
+| `__init__()`        | —                | Instance            | Initializes an empty sequence manager              |
+| `parse()`           | `filepath`: str  | None                | Loads and parses FASTA file                        |
+| `get_stats()`       | —                | dict                | Returns basic stats like count, min/max/mean length|
+| `get_gc_contents()` | —                | List[float]         | Returns list of GC content for all sequences       |
+| `get_names()`       | —                | List[str]           | Returns sequence names                             |
+| `get_sequences()`   | —                | List[MitochondrialDNA] | Returns all sequence objects                     |
+
 
 ## Web Interface Templates
 These Jinja2 HTML templates are used to render the front-end of the Flask application.
