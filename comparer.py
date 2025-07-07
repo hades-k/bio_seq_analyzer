@@ -1,7 +1,7 @@
 from sequence import MitochondrialDNA
 from tools import SequenceAligner, MotifFinder
 from typing import List
-from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
 
 class SequenceAlignWrapper:
     def __init__(self):
@@ -97,30 +97,24 @@ class ConservedMotifAnalyzer:
 
 
 class MultiAligner:
-    def __init__(self, mito_objs):
-        self.mito_objs = mito_objs
-        self.names = [m._MitochondrialDNA__name for m in mito_objs]
+    def __init__(self, sequences):
+        self.sequences = sequences
 
-    def _align_pair(self, i, j):
+    def _score_pair(self, pair):
+        i, j = pair
+        seq1 = self.sequences[i].sequence
+        seq2 = self.sequences[j].sequence
         aligner = SequenceAligner()
-        s1 = self.mito_objs[i].sequence
-        s2 = self.mito_objs[j].sequence
-        aligner.run(s1, s2)
-        return ((i, j), aligner.get_alignment_data()["score"])
+        aligner.run(seq1, seq2)
+        return ((i, j), aligner.get_alignment_data()['score'])
 
     def pairwise_scores(self):
-        n = len(self.mito_objs)
-        pairs = [(i, j) for i in range(n) for j in range(i+1, n)]
-        score_map = {}
+        n = len(self.sequences)
+        pairs = [(i, j) for i in range(n) for j in range(i + 1, n)]
+        print(f"Starting multiprocessing for {len(pairs)} pairwise alignments...")
 
-        print(f"Starting pairwise alignment for {len(pairs)} pairs...")
-
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            results = executor.map(lambda pair: self._align_pair(*pair), pairs)
-
-            for (i, j), score in results:
-                score_map[(i, j)] = score
-                score_map[(j, i)] = score  # symmetric
+        with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+            results = pool.map(self._score_pair, pairs)
 
         print("Pairwise alignment complete.")
-        return score_map
+        return dict(results)
