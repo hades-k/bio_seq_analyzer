@@ -1,10 +1,9 @@
 # Project Documentation
 
-This document provides a detailed overview of the classes and methods used in the Bio Seq Analyzer project.
+This software models mitochondrial DNA using a modular and extensible object-oriented design. Sequences are loaded from FASTA files via the `Parser` class and represented as `MitochondrialDNA` objects. Users can extract statistics (e.g., GC content), search for motifs, and perform sequence alignments. Classes like `SequenceAligner` and `MotifFinder` inherit a shared interface from `Tool`. `SequenceComparer` offers comparative insights across datasets. All components are designed for reuse, extensibility, and clear separation of responsibilities. Specifically, the `SequenceComparer` class facilitates cross-species analysis by enabling pairwise alignments and comparisons against a reference sequence, providing insights into evolutionary relationships and sequence divergence. The `MotifFinder` can identify conserved patterns across multiple `MitochondrialDNA` objects, highlighting functionally important regions. These interactions allow for a comprehensive understanding of genomic data beyond individual sequence analysis.
 
 ## Table of Contents
 - [CRC Cards](#crc-cards-class-responsibility-collaborators)
-- [Description](#description)
 - [UML diagram](#uml-diagram)
 - [Method Documentation](#method-documentation)
   - [Sequence](#sequence-class-abstract)
@@ -164,11 +163,6 @@ This document provides a detailed overview of the classes and methods used in th
 - `SequenceAlignWrapper` (used to perform alignment)
 
 ---
-
-
-## Description
-This software models mitochondrial DNA using a modular and extensible object-oriented design. Sequences are loaded from FASTA files via the `Parser` class and represented as `MitochondrialDNA` objects. Users can extract statistics (e.g., GC content), search for motifs, and perform sequence alignments. Classes like `SequenceAligner` and `MotifFinder` inherit a shared interface from `Tool`. `SequenceComparer` offers comparative insights across datasets. All components are designed for reuse, extensibility, and clear separation of responsibilities. Specifically, the `SequenceComparer` class facilitates cross-species analysis by enabling pairwise alignments and comparisons against a reference sequence, providing insights into evolutionary relationships and sequence divergence. The `MotifFinder` can identify conserved patterns across multiple `MitochondrialDNA` objects, highlighting functionally important regions. These interactions allow for a comprehensive understanding of genomic data beyond individual sequence analysis.
-
 
 ## UML diagram 
 
