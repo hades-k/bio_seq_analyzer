@@ -1,3 +1,15 @@
+## Table of Contents
+- [CRC Cards](#crc-cards-class-responsibility-collaborators)
+- [Description](#description)
+- [Method Documentation](#method-documentation)
+  - [Sequence](#sequence-class)
+  - [MitochondrialDNA](#mitochondrialdna-class)
+  - [MotifFinder](#motiffinder-class)
+  - [SequenceAlignWrapper](#sequencealignwrapper-class)
+  - [AlignmentVisualizer](#alignmentvisualizer-class)
+  - [SequenceComparer](#sequencecomparer-class)
+- [Web Interface Templates](#web-interface-templates)
+
 # Project Documentation
 
 This document provides a detailed overview of the classes and methods used in the Bio Seq Analyzer project.
@@ -220,4 +232,51 @@ These Jinja2 HTML templates are used to render the front-end of the Flask applic
 | `summary.html` | Shows GC content statistics and related visualizations |
 | `motif.html` | Allows users to search for or discover motifs in sequences |
 | `align.html` | Interface for selecting and aligning two sequences |
+
+## Example Input/Output
+
+### Input FASTA (snippet)
+
+```
+>NC_012920.1 Homo sapiens mitochondrion, complete genome
+GATCACAGGTCTATCACCCTATTAACCACTCACGGGAGCTCTCCATGCATTT...
+>NC_002008.4 Pan troglodytes mitochondrion, complete genome
+GAGCCCGTCTAAACTCCTCTATGTGTCTATGTCCTTGCTTTGGCGGTTTAG...
+```
+
+---
+
+### Motif Search Example
+
+- **Motif searched:** `ATGCG`
+- **Discovered in:** 3 sequences
+- **Positions found:**  
+  - Homo sapiens: 102, 350  
+  - Pan troglodytes: 140  
+
+---
+
+### Pairwise Alignment Output
+
+**Sequences compared:** Homo sapiens vs Pan troglodytes  
+**Method:** Global (Needleman-Wunsch)  
+**Score:** 186  
+**Matches:** 91  
+**Mismatches:** 22  
+**Gaps:** 6  
+
+```
+A-TGCGATACCTGGT
+ | || ||| || ||
+AATG-GATAC-TGGT
+```
+
+---
+
+### GC Content Summary
+
+| Species           | GC Content (%) |
+|-------------------|----------------|
+| Homo sapiens      | 43.21          |
+| Pan troglodytes   | 44.02          |
 
