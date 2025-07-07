@@ -121,7 +121,11 @@ def align():
         method = request.form.get('method', 'global')
         comparer = SequenceComparer(fasta_manager.get_sequences())
         result = comparer.compare_pair(idx1, idx2, method)
-    return render_template('align.html', result=result, names=names)
+        if result:
+            result['aligned_seq1'] = "".join(result['aligned_seq1'])
+            result['aligned_seq2'] = "".join(result['aligned_seq2'])
+            result['matches'] = "".join(result['matches'])
+    return render_template('align.html', result=result, names=names, enumerate=enumerate)
 
 @app.route('/plot.png')
 def plot_png():
