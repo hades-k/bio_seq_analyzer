@@ -7,16 +7,13 @@
   </div>
   <button class="btn btn-primary" type="submit">Upload</button>
 </form>
-{% if fasta_manager.datasets %}
-<h3>Select File</h3>
-<form method="POST" action="{{ url_for('set_file') }}">
-  <select name="filename" class="form-select mb-2">
-    {% for file in fasta_manager.datasets %}
-      <option value="{{ file }}" {% if file == fasta_manager.current_file %}selected{% endif %}>{{ file }}</option>
-    {% endfor %}
-  </select>
-  <button type="submit" class="btn btn-secondary">Set Current File</button>
-</form>
+{% if uploaded_files %}
+<h3>Uploaded Files</h3>
+<ul>
+  {% for file in uploaded_files %}
+  <li>{{ file }}</li>
+  {% endfor %}
+</ul>
 {% endif %}
 
 {% endblock %}
