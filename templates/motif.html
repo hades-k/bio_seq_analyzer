@@ -34,7 +34,7 @@
   <ul class="list-group">
     {% for r in results %}
       <li class="list-group-item">
-        <strong>{{ r.name }}</strong>: {{ r.count }} hits<br>
+        <strong>{{ r.sequence_name }}</strong>: {{ r.count }} hits<br>
         Positions: {{ r.positions }}
       </li>
     {% endfor %}
@@ -44,10 +44,16 @@
 {% if discovered %}
 <h3 class="mt-4">Discovered Motifs</h3>
 <ul class="list-group">
-  {% for motif, count in discovered.items() %}
-    <li class="list-group-item">{{ motif }}: {{ count }}</li>
+  {% for motif_name, details in discovered.items() %}
+    <li class="list-group-item">
+      <strong>{{ motif_name }}</strong>
+      <ul>
+        {% for seq_idx, positions in details.items() %}
+          <li>{{ sequence_names[seq_idx] }}: {{ positions }}</li>
+        {% endfor %}
+      </ul>
+    </li>
   {% endfor %}
 </ul>
 {% endif %}
-
 {% endblock %}

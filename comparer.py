@@ -71,29 +71,7 @@ class SequenceComparer:
             })
         return results
 
-
-class ConservedMotifAnalyzer:
-    def __init__(self, sequences: List[MitochondrialDNA]):
-        self.sequences = sequences
-        self.finder = MotifFinder()
-
-    def find_conserved(self, k=5, threshold=2):
-        motif_counts: dict[str, int] = {}
-        for seq in self.sequences:
-            result = self.finder.run(seq.sequence, k=k, threshold=threshold)
-            for motif in result:
-                motif_counts[motif] = motif_counts.get(motif, 0) + 1
-
-        # Only motifs present in all sequences and above threshold in each
-        conserved = {m: c for m, c in motif_counts.items() if c == len(self.sequences)}
-        return conserved, motif_counts
-
-    def motif_occurrences(self, motif: str):
-        positions = {}
-        for i, seq in enumerate(self.sequences):
-            result = self.finder.run(seq.sequence, motif=motif)
-            positions[i] = result.get('positions', [])
-        return positions
+    
 
 
 class MultiAligner:

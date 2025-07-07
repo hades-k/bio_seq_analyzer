@@ -308,37 +308,52 @@ class SequenceAligner(Tool):
         return self.result
 
 
+from typing import List
+from sequence import MitochondrialDNA
+
 class MotifFinder(Tool):
     def __init__(self):
         self.__last_result = {}
         self.__discovered = False
 
-    def run(self, sequence: str, motif: str = None, k:int =5, threshold:int = 2):
+    def run(self, sequences: List[MitochondrialDNA], motif: str = None, k: int = 5, threshold: int = 2):
         '''
-        :param sequence: the sequence to analyze
-        :param motif: motif to find in the target sequence, can be None
-        :param k: length of k-mers to find if discovering new motifs
-        :param threshold: threshold for finding new motifs
-        :return: dict
+        :param sequences: A list of MitochondrialDNA objects to analyze.
+        :param motif: Specific motif to find across all sequences. If None, discovers conserved motifs.
+        :param k: Length of k-mers for motif discovery.
+        :param threshold: Minimum number of sequences a motif must appear in to be considered conserved.
+        :return: dict containing results.
         '''
-        if not sequence:
-            return {'error': 'No sequence provided.'}
-        sequence = sequence.upper()
-        if not motif:
-            self.__last_result = self._discover_motifs(sequence, k=k, threshold=threshold)
+        if not sequences:
+            return {'error': 'No sequences provided.'}
+
+        if motif:
+            # Search for a specific motif across all sequences
+            self.__last_result = self._find_specific_motif_across_sequences(sequences, motif)
+            self.__discovered = False
+        else:
+            # Discover conserved motifs across all sequences
+            self.__last_result = self._discover_conserved_motifs(sequences, k, threshold)
             self.__discovered = True
             if not self.__last_result:
-                print("No motif found.")
-        else:
-            positions = self._find_motif_occurrences(sequence, motif)
-            self.__last_result = {
-                "motif": motif,
-                "count": len(positions),
-                "positions": positions
-            }
+                print("No conserved motifs found.")
         return self.__last_result
 
-    def _find_motif_occurrences(self, sequence: str, motif):
+    def _find_specific_motif_across_sequences(self, sequences: List[MitochondrialDNA], motif: str):
+        results = []
+        for i, seq_obj in enumerate(sequences):
+            positions = self._find_motif_occurrences(seq_obj.sequence.upper(), motif.upper())
+            if positions:
+                results.append({
+                    'sequence_index': i,
+                    'sequence_name': seq_obj.name,
+                    'motif': motif,
+                    'count': len(positions),
+                    'positions': positions
+                })
+        return results
+
+    def _find_motif_occurrences(self, sequence: str, motif: str):
         positions = []
         motif_len = len(motif)
         for i in range(len(sequence) - motif_len + 1):
@@ -346,21 +361,38 @@ class MotifFinder(Tool):
                 positions.append(i)
         return positions
 
-    def _discover_motifs(self, sequence, k: int, threshold: int = 2):
-        '''
-        Find frequent k-mers across sequences
-        :param sequence: the target sequence
-        :param k: the length of the k-mers
-        :param threshold: the minimum number of occurrences
-        :return: list of common motifs found
-        '''
-        kmer_counts = Counter()
-        seq = sequence.upper()
-        for i in range(len(seq) - k + 1):
-            kmer = seq[i:i + k]
-            kmer_counts[kmer] += 1
-        found = {motif:count for motif, count in kmer_counts.items() if count >= threshold}
-        return found
+    def _discover_conserved_motifs(self, sequences: List[MitochondrialDNA], k: int, threshold: int):
+        motif_occurrences_details = {}
+        for seq_idx, seq_obj in enumerate(sequences):
+            # Discover motifs within each sequence (min_motif_occurrences_in_sequence implicitly 1)
+            kmer_counts = Counter()
+            sequence = seq_obj.sequence.upper()
+            for i in range(len(sequence) - k + 1):
+                kmer = sequence[i:i + k]
+                kmer_counts[kmer] += 1
+
+            found_motifs_in_seq = {motif: count for motif, count in kmer_counts.items() if count >= 1}
+
+            for motif in found_motifs_in_seq:
+                if motif not in motif_occurrences_details:
+                    motif_occurrences_details[motif] = {}
+                # Store positions for this motif in this sequence
+                motif_occurrences_details[motif][seq_idx] = self._find_motif_occurrences(sequence, motif)
+
+        conserved_motifs_details = {}
+        for motif, seq_details in motif_occurrences_details.items():
+            if len(seq_details) >= threshold:
+                conserved_motifs_details[motif] = seq_details
+
+        return conserved_motifs_details
+
+    def _find_motif_occurrences(self, sequence: str, motif: str):
+        positions = []
+        motif_len = len(motif)
+        for i in range(len(sequence) - motif_len + 1):
+            if sequence[i:i + motif_len] == motif:
+                positions.append(i)
+        return positions
 
     def get_result(self):
         if not self.__last_result:
@@ -373,34 +405,18 @@ class MotifFinder(Tool):
             return
         if self.__discovered:
             print(f'Discovered the following motifs:')
-            for motif, count in self.__last_result.items():
-                print(f'\t{motif}: {count}')
+            for motif, seq_details in self.__last_result.items():
+                print(f'\t{motif}:')
+                for seq_idx, positions in seq_details.items():
+                    print(f'\t\tSequence {seq_idx}: {len(positions)} occurrences at {positions}')
             print()
         else:
-            print(f"Motif: {self.__last_result['motif']}")
-            print(f"Count: {self.__last_result['count']}")
-            print(f"Positions: {', '.join(map(str, self.__last_result['positions']))}")
+            print(f"Specific Motif Search Results:")
+            if not self.__last_result:
+                print("\tMotif not found in any sequence.")
+            for result in self.__last_result:
+                print(f"\tSequence {result['sequence_index']} ({result['sequence_name']}):")
+                print(f"\t\tMotif: {result['motif']}")
+                print(f"\t\tCount: {result['count']}")
+                print(f"\t\tPositions: {', '.join(map(str, result['positions']))}")
             print()
-
-
-if __name__ == '__main__':
-    from sequence import *
-
-    parser = Parser('fasta')
-    records = parser.run("synthetic_mtDNA_dataset.fasta")
-    parser.save_to_csv()
-    parser.report()
-    NC10seq = MitochondrialDNA(records.loc[10]).sequence
-    NC11seq = MitochondrialDNA(records.loc[11]).sequence
-
-    aligner = SequenceAligner()
-    aligner.run(NC10seq, NC11seq)
-    aligner.report(print_alignment=False)
-    aligner.run(NC10seq, NC11seq, method="local")
-    aligner.report(print_alignment=False)
-
-    finder = MotifFinder()
-    finder.run(NC10seq, 'GATC')
-    finder.report()
-    finder.run(NC10seq, threshold=7, k=4)
-    finder.report()

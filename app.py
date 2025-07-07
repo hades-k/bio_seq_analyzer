@@ -5,7 +5,7 @@ import io
 import matplotlib.pyplot as plt
 from tools import Parser, MotifFinder
 from sequence import MitochondrialDNA
-from comparer import SequenceComparer, ConservedMotifAnalyzer
+from comparer import SequenceComparer
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'fasta', 'fa', 'fna'}
@@ -94,22 +94,22 @@ def summary():
 def motif():
     results = None
     discovered = None
+    finder = MotifFinder()
+    sequences = fasta_manager.get_sequences()
+
     if request.method == 'POST':
         motif_str = request.form.get('motif')
         k = int(request.form.get('k', 5))
-        threshold = int(request.form.get('threshold', 2))
-        sequences = fasta_manager.get_sequences()
+        min_sequences_with_motif = int(request.form.get('threshold', 2))
+
         if motif_str:
-            finder = MotifFinder()
-            results = []
-            for i, obj in enumerate(sequences):
-                res = finder.run(obj.sequence, motif=motif_str)
-                results.append({'index': i, 'name': obj.name, 'count': res['count'], 'positions': res['positions']})
+            results = finder.run(sequences, motif=motif_str)
             fasta_manager.motif_results = results
         else:
-            analyzer = ConservedMotifAnalyzer(sequences)
-            discovered, _ = analyzer.find_conserved(k=k, threshold=threshold)
-    return render_template('motif.html', results=results, discovered=discovered)
+            discovered = finder.run(sequences, k=k, threshold=min_sequences_with_motif)
+
+    return render_template('motif.html', results=results,
+                           discovered=discovered, sequence_names=fasta_manager.get_names())
 
 @app.route('/align', methods=['GET', 'POST'])
 def align():
@@ -156,7 +156,7 @@ def gc_histogram_png():
 def motif_histogram_png():
     if not fasta_manager.motif_results:
         return "", 404
-    names = [r['name'] for r in fasta_manager.motif_results]
+    names = [r['sequence_name'] for r in fasta_manager.motif_results]
     counts = [r['count'] for r in fasta_manager.motif_results]
     fig, ax = plt.subplots(figsize=(10, 6))
     ax.bar(names, counts)
