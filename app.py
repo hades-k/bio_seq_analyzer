@@ -132,7 +132,12 @@ def align():
         aligner.run(seq1, seq2, method)
         result = aligner.get_alignment_data()
 
-    return render_template('align.html', result=result, names=names)
+    return render_template(
+    'align.html',
+    result=result,
+    names=names,
+    indexed_names=list(enumerate(names))
+)
 
 @app.route('/plot.png')
 def plot_png():
