@@ -19,45 +19,34 @@ if not os.path.exists(UPLOAD_FOLDER):
 
 class FastaManager:
     def __init__(self):
-        self.datasets = {}  # {filename: list of MitochondrialDNA objects}
-        self.current_file = None
+        self.sequences = []  # List of MitochondrialDNA
+        self.motif_results = None
 
     def parse(self, filepath):
         parser = Parser('fasta')
         df = parser.run(filepath)
         mito_objs = [MitochondrialDNA(df.loc[i]) for i in range(len(df))]
-        filename = os.path.basename(filepath)
-        self.datasets[filename] = {
-            'df': df,
-            'sequences': mito_objs
-        }
-        self.current_file = filename
-        return df
-
-    def set_current_file(self, filename):
-        if filename in self.datasets:
-            self.current_file = filename
+        self.sequences.extend(mito_objs)
 
     def get_stats(self):
-        if not self.current_file:
+        if not self.sequences:
             return {}
-        df = self.datasets[self.current_file]['df']
-        lengths = df['length']
+        lengths = [obj.length for obj in self.sequences]
         return {
-            'count': len(df),
-            'min_length': lengths.min(),
-            'max_length': lengths.max(),
-            'mean_length': lengths.mean()
+            'count': len(self.sequences),
+            'min_length': min(lengths),
+            'max_length': max(lengths),
+            'mean_length': sum(lengths) / len(lengths),
         }
 
     def get_gc_contents(self):
-        return [obj.gc_content for obj in self.datasets[self.current_file]['sequences']]
+        return [obj.gc_content for obj in self.sequences]
 
     def get_names(self):
-        return list(self.datasets[self.current_file]['df']['name'])
+        return [obj.name for obj in self.sequences]
 
     def get_sequences(self):
-        return self.datasets[self.current_file]['sequences']
+        return self.sequences
 
 fasta_manager = FastaManager()
 
