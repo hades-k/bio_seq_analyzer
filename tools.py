@@ -328,11 +328,9 @@ class MotifFinder(Tool):
             return {'error': 'No sequences provided.'}
 
         if motif:
-            # Search for a specific motif across all sequences
             self.__last_result = self._find_specific_motif_across_sequences(sequences, motif)
             self.__discovered = False
         else:
-            # Discover conserved motifs across all sequences
             self.__last_result = self._discover_conserved_motifs(sequences, k, threshold)
             self.__discovered = True
             if not self.__last_result:
@@ -376,7 +374,7 @@ class MotifFinder(Tool):
             for motif in found_motifs_in_seq:
                 if motif not in motif_occurrences_details:
                     motif_occurrences_details[motif] = {}
-                # Store positions for this motif in this sequence
+
                 motif_occurrences_details[motif][seq_idx] = self._find_motif_occurrences(sequence, motif)
 
         conserved_motifs_details = {}
@@ -385,14 +383,6 @@ class MotifFinder(Tool):
                 conserved_motifs_details[motif] = seq_details
 
         return conserved_motifs_details
-
-    def _find_motif_occurrences(self, sequence: str, motif: str):
-        positions = []
-        motif_len = len(motif)
-        for i in range(len(sequence) - motif_len + 1):
-            if sequence[i:i + motif_len] == motif:
-                positions.append(i)
-        return positions
 
     def get_result(self):
         if not self.__last_result:
