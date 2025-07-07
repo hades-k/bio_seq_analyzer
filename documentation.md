@@ -280,3 +280,225 @@ AATG-GATAC-TGGT
 | Homo sapiens      | 43.21          |
 | Pan troglodytes   | 44.02          |
 
+## MitochondrialDNA
+
+### `__init__(df)`
+
+**Description:**
+Initialize from a pandas DataFrame row.
+
+**Parameters:**
+- `df` (`pd.Series`): Row containing sequence metadata
+**Returns:**
+- `MitochondrialDNA`: A new instance
+### `sequence (property)`
+
+**Description:**
+Returns the raw DNA sequence.
+
+**Returns:**
+- `str`: The sequence
+### `length (property)`
+
+**Description:**
+Returns the sequence length.
+
+**Returns:**
+- `int`: Length of the DNA sequence
+### `gc_content (property)`
+
+**Description:**
+Calculates GC content as percentage.
+
+**Returns:**
+- `float`: Percentage of G and C bases
+### `get_subsequence(start, end)`
+
+**Description:**
+Extracts a subsequence between start and end indices.
+
+**Parameters:**
+- `start` (`int`): Start index (inclusive)
+- `end` (`int`): End index (exclusive)
+**Returns:**
+- `str`: The extracted subsequence
+**Raises:**
+- `ValueError`: If indices are out of range
+**Example:**
+```python
+sub = dna.get_subsequence(10, 50)
+```
+
+### `find_irregular_bases()`
+
+**Description:**
+Returns a list of non-standard bases.
+
+**Returns:**
+- `list[str]`: Bases outside A, T, G, C
+### `name (property)`
+
+**Description:**
+Returns the sequence name.
+
+**Returns:**
+- `str`: Name of the DNA record
+## SequenceAligner
+
+### `__init__(match=2, mismatch=-1, gap=-2, show_matrix=False)`
+
+**Description:**
+Initialize alignment scoring system.
+
+**Parameters:**
+- `match` (`int`): Score for matches
+- `mismatch` (`int`): Score for mismatches
+- `gap` (`int`): Score for gaps
+- `show_matrix` (`bool`): Whether to print the score matrix
+**Returns:**
+- `SequenceAligner`: Instance
+### `run(seq1, seq2, method='global')`
+
+**Description:**
+Runs alignment using specified method.
+
+**Parameters:**
+- `seq1` (`str`): First sequence
+- `seq2` (`str`): Second sequence
+- `method` (`str`): 'global' or 'local'
+**Returns:**
+- `None`: Populates internal result dictionary
+**Raises:**
+- `ValueError`: If method is invalid
+### `get_alignment_data()`
+
+**Description:**
+Returns the full alignment results.
+
+**Returns:**
+- `dict`: Contains aligned sequences, score, matches
+### `report(width=50, print_alignment=True)`
+
+**Description:**
+Prints alignment summary and optionally the sequences.
+
+**Parameters:**
+- `width` (`int`): Line width for print
+- `print_alignment` (`bool`): Whether to print the alignment
+**Returns:**
+- `None`: Outputs to console
+## MotifFinder
+
+### `__init__()`
+
+**Description:**
+Initializes internal motif result storage.
+
+**Returns:**
+- `MotifFinder`: New instance
+### `run(sequences, motif=None, k=5, threshold=2)`
+
+**Description:**
+Searches for a specific motif or discovers conserved motifs.
+
+**Parameters:**
+- `sequences` (`List[MitochondrialDNA]`): Input sequences
+- `motif` (`str`): Motif to search (optional)
+- `k` (`int`): Length of k-mers (if discovering)
+- `threshold` (`int`): Minimum number of sequences a motif must appear in
+**Returns:**
+- `dict or list`: Match results or discovered motifs
+### `get_result()`
+
+**Description:**
+Returns the result of the last motif search.
+
+**Returns:**
+- `dict or list`: Cached results
+### `report()`
+
+**Description:**
+Prints summary of motif analysis.
+
+**Returns:**
+- `None`: Console output
+## Parser
+
+### `__init__(format='fasta')`
+
+**Description:**
+Initializes parser for a supported format.
+
+**Parameters:**
+- `format` (`str`): BioPython-supported format (default: 'fasta')
+**Returns:**
+- `Parser`: Instance
+### `run(file_path, return_objects=False)`
+
+**Description:**
+Parses a sequence file and returns either a DataFrame or list of sequence objects.
+
+**Parameters:**
+- `file_path` (`str`): Path to the file
+- `return_objects` (`bool`): Return list of MitochondrialDNA if True
+**Returns:**
+- `pd.DataFrame or list`: Parsed data
+**Raises:**
+- `FileNotFoundError`: If file doesn't exist
+### `save_to_csv(output_path=None)`
+
+**Description:**
+Saves parsed data to CSV.
+
+**Parameters:**
+- `output_path` (`str`): Path to save output (optional)
+**Returns:**
+- `None`: Writes file or prints error
+### `report(print_header=True)`
+
+**Description:**
+Prints summary of parsed records.
+
+**Parameters:**
+- `print_header` (`bool`): Whether to print DataFrame head
+**Returns:**
+- `None`: Console output
+## SequenceComparer
+
+### `__init__(sequences)`
+
+**Description:**
+Initialize comparer with a list of sequences.
+
+**Parameters:**
+- `sequences` (`List[MitochondrialDNA]`): The sequences to compare
+**Returns:**
+- `SequenceComparer`: Instance
+### `compare_pair(idx1, idx2, method='global')`
+
+**Description:**
+Compares two sequences using alignment.
+
+**Parameters:**
+- `idx1` (`int`): Index of first sequence
+- `idx2` (`int`): Index of second sequence
+- `method` (`str`): 'global' or 'local'
+**Returns:**
+- `dict`: Alignment statistics
+### `compare_all()`
+
+**Description:**
+Compares all unique sequence pairs.
+
+**Returns:**
+- `List[dict]`: Stats for all pairwise alignments
+### `compare_to_reference(ref_index=0, method='global')`
+
+**Description:**
+Compares each sequence to a reference.
+
+**Parameters:**
+- `ref_index` (`int`): Index of reference sequence
+- `method` (`str`): Alignment method
+**Returns:**
+- `List[dict]`: Stats per comparison
