@@ -3,57 +3,66 @@
 <h2>Motif Search</h2>
 <form method="POST">
   <div class="mb-3">
-    <input class="form-control" type="text" name="motif" placeholder="Enter motif (e.g., GATC)">
+    <label>Motif (optional):</label>
+    <input class="form-control" type="text" name="motif" placeholder="e.g. ATGCG">
   </div>
-  <button class="btn btn-primary" type="submit">Search Motif</button>
-</form>
-
-<h2 class="mt-4">Discover Conserved Motifs</h2>
-<form method="POST">
-  <div class="row">
-    <div class="col-md-6">
-      <label for="k">K-mer length</label>
-      <input class="form-control" type="number" name="k" value="5">
-    </div>
-    <div class="col-md-6">
-      <label for="threshold">Occurrence Threshold</label>
-      <input class="form-control" type="number" name="threshold" value="2">
-    </div>
+  <div class="mb-3">
+    <label>k-mer length (for discovery):</label>
+    <input class="form-control" type="number" name="k" value="5">
   </div>
-  <button class="btn btn-secondary mt-2" type="submit">Discover Motifs</button>
+  <div class="mb-3">
+    <label>Minimum # of sequences containing motif:</label>
+    <input class="form-control" type="number" name="threshold" value="2">
+  </div>
+  <button class="btn btn-primary" type="submit">Search</button>
 </form>
 
 {% if results %}
-  <div class="row mt-4">
-    <div class="col-md-12">
-        <h3 class="mt-4">Motif Distribution</h3>
-        <img src="/motif_histogram.png" alt="Motif Distribution Histogram" class="img-fluid">
-    </div>
-  </div>
-  <h3 class="mt-4">Search Results</h3>
-  <ul class="list-group">
-    {% for r in results %}
+  <h3 class="mt-4">Motif Matches</h3>
+  <ul class="list-group mb-4">
+    {% for result in results %}
       <li class="list-group-item">
-        <strong>{{ r.sequence_name }}</strong>: {{ r.count }} hits<br>
-        Positions: {{ r.positions }}
+        <strong>{{ result.sequence_name }}</strong>: {{ result.count }} match(es) at positions {{ result.positions }}
       </li>
     {% endfor %}
   </ul>
+
+  <h3 class="mt-4">Motif Position Visualizations</h3>
+  {% for result in results %}
+    <div class="motif-sequence">
+      <p><strong>{{ result.sequence_name }}</strong></p>
+      <div class="sequence-bar">
+        {% for pos in result.positions %}
+          <div class="motif-marker" style="left: {{ (pos / max_length) * 100 }}%;"></div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+
+  <style>
+    .sequence-bar {
+      position: relative;
+      height: 10px;
+      background-color: #ddd;
+      margin-bottom: 16px;
+      border-radius: 5px;
+    }
+    .motif-marker {
+      position: absolute;
+      top: 0;
+      height: 10px;
+      width: 2px;
+      background-color: red;
+    }
+  </style>
 {% endif %}
 
 {% if discovered %}
-<h3 class="mt-4">Discovered Motifs</h3>
-<ul class="list-group">
-  {% for motif_name, details in discovered.items() %}
-    <li class="list-group-item">
-      <strong>{{ motif_name }}</strong>
-      <ul>
-        {% for seq_idx, positions in details.items() %}
-          <li>{{ sequence_names[seq_idx] }}: {{ positions }}</li>
-        {% endfor %}
-      </ul>
-    </li>
-  {% endfor %}
-</ul>
+  <h3 class="mt-4">Discovered Motifs</h3>
+  <ul class="list-group">
+    {% for motif in discovered %}
+      <li class="list-group-item">{{ motif }}</li>
+    {% endfor %}
+  </ul>
 {% endif %}
 {% endblock %}
