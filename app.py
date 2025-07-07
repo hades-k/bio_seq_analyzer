@@ -300,11 +300,11 @@ def heatmap_png():
         fig.colorbar(im, ax=ax, label='Alignment Score')
         plt.tight_layout()
 
-        img = io.BytesIO()
-        fig.savefig(img, format='png')
-        img.seek(0)
-        print("Heatmap image ready.")
-        return send_file(img, mimetype='image/png')
+        # Save to file instead of memory
+        out_path = "static/heatmap_output.png"
+        fig.savefig(out_path)
+        print(f"Heatmap saved to {out_path}")
+        return redirect(f"/{out_path}")
     except Exception as e:
         print(f"Heatmap generation failed: {e}")
         return "", 500
