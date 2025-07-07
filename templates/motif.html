@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Motif Search</h2>
+<form method="POST">
+  <div class="mb-3">
+    <input class="form-control" type="text" name="motif" placeholder="Enter motif (e.g., GATC)">
+  </div>
+  <button class="btn btn-primary" type="submit">Search Motif</button>
+</form>
+{% if results %}
+  <div class="row mt-4">
+    <div class="col-md-12">
+        <h3 class="mt-4">Motif Distribution</h3>
+        <img src="/motif_histogram.png" alt="Motif Distribution Histogram" class="img-fluid">
+    </div>
+  </div>
+  <h3 class="mt-4">Results</h3>
+  <ul class="list-group">
+    {% for r in results %}
+      <li class="list-group-item">
+        <strong>{{ r.name }}</strong>: {{ r.count }} hits<br>
+        Positions: {{ r.positions }}
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}

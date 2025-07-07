@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Pairwise Sequence Alignment</h2>
+<form method="POST">
+  <div class="row mb-3">
+    <div class="col">
+      <label>Sequence 1</label>
+      <select class="form-control" name="seq1">
+        {% for i in range(names|length) %}
+          <option value="{{ i }}">{{ names[i] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col">
+      <label>Sequence 2</label>
+      <select class="form-control" name="seq2">
+        {% for i in range(names|length) %}
+          <option value="{{ i }}">{{ names[i] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <button class="btn btn-primary" type="submit">Align</button>
+</form>
+{% if result %}
+  <h3 class="mt-4">Alignment Result</h3>
+  <p><strong>Score:</strong> {{ result.score }}</p>
+    <pre>{{ result.aligned_seq1 | join('') }}</pre>
+    <pre>{{ result.matches | join('') }}</pre>
+    <pre>{{ result.aligned_seq2 | join('') }}</pre>
+{% endif %}
+{% endblock %}
