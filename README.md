@@ -38,34 +38,13 @@ BioSeq Analyzer is a modular software solution for analyzing mitochondrial DNA (
 
 ---
 
-## How to Run the Web App
-
-1.  **Install dependencies:**
-    -   Ensure Python 3 and `pip` are installed.
-    -   Install required packages using `pip`:
-        ```bash
-        pip install -r requirements.txt
-        ```
-
-2.  **Start the Flask app:**
-    ```bash
-    python app.py
-    ```
-    The application will typically run on `http://127.0.0.1:5000/` by default.
-
-3.  **Access in browser:**
-    -   Open your web browser and navigate to the address provided in the terminal (e.g., `http://127.0.0.1:5000/`).
-    -   Upload a FASTA file and explore the analysis features.
-
----
-
 ## Getting Started (Installation & Usage)
 
 To run the Bio Seq Analyzer web application locally:
 
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/yourusername/bio-seq-analyzer.git
+git clone https://github.com/hades-k/bio-seq-analyzer.git
 cd bio-seq-analyzer
 ```
 
