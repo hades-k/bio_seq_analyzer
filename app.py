@@ -1,9 +1,9 @@
-#app.py without sliders qaaa
 from flask import Flask, render_template, request, redirect, url_for, flash, send_file
 from werkzeug.utils import secure_filename
 import os
-import pandas as pd
-from tools import Parser, SequenceAligner, MotifFinder
+import io
+import matplotlib.pyplot as plt
+from tools import Parser, MotifFinder
 from sequence import MitochondrialDNA
 from comparer import SequenceComparer, ConservedMotifAnalyzer
 
@@ -22,6 +22,7 @@ class FastaManager:
         self.df = None
         self.records = None
         self.mito_objs = []
+        self.motif_results = None
 
     def parse(self, filepath):
         parser = Parser('fasta')
@@ -127,8 +128,9 @@ def motif():
         tool = MotifWebTool(fasta_manager.get_sequences())
         if motif:
             results = tool.search_motif(motif)
+            fasta_manager.motif_results = results
         else:
-            discovered = tool.discover_motifs(k=k, threshold=threshold)
+            discovered, _ = tool.discover_motifs(k=k, threshold=threshold)
     return render_template('motif.html', results=results, discovered=discovered)
 
 @app.route('/align', methods=['GET', 'POST'])
@@ -143,12 +145,51 @@ def align():
         result = tool.align_pair(idx1, idx2, method)
     return render_template('align.html', result=result, names=names)
 
-@app.route('/pairwise')
-def pairwise():
-    tool = AlignmentWebTool(fasta_manager.get_sequences())
-    results = tool.all_pairwise()
+@app.route('/plot.png')
+def plot_png():
+    gc_contents = fasta_manager.get_gc_contents()
     names = fasta_manager.get_names()
-    return render_template('pairwise.html', results=results, names=names)
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(names, gc_contents)
+    ax.set_ylabel('GC Content (%)')
+    ax.set_title('GC Content Distribution')
+    plt.setp(ax.get_xticklabels(), visible=False)
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+@app.route('/gc_histogram.png')
+def gc_histogram_png():
+    gc_contents = fasta_manager.get_gc_contents()
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.hist(gc_contents, bins=10, edgecolor='black')
+    ax.set_xlabel('GC Content (%)')
+    ax.set_ylabel('Frequency')
+    ax.set_title('GC Content Frequency Histogram')
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+@app.route('/motif_histogram.png')
+def motif_histogram_png():
+    if not fasta_manager.motif_results:
+        return "", 404
+    names = [r['name'] for r in fasta_manager.motif_results]
+    counts = [r['count'] for r in fasta_manager.motif_results]
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.bar(names, counts)
+    ax.set_ylabel('Motif Count')
+    ax.set_title('Motif Distribution')
+    plt.setp(ax.get_xticklabels(), visible=False)
+    plt.tight_layout()
+    img = io.BytesIO()
+    fig.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
 
 if __name__ == '__main__':
     app.run(debug=True)
