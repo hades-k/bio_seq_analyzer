@@ -146,6 +146,7 @@ def gc_histogram_png():
     ax.set_xlabel('GC Content (%)')
     ax.set_ylabel('Frequency')
     ax.set_title('GC Content Frequency Histogram')
+    plt.xticks()
     plt.tight_layout()
     img = io.BytesIO()
     fig.savefig(img, format='png')
