@@ -174,7 +174,7 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 ## UML diagram 
 
-<img src = 'https://github.com/hades-k/bio_seq_analyzer/blob/main/UML-diagram.png'>
+<img src = 'UML-diagram.png'>
 
 ## Method Documentation
 

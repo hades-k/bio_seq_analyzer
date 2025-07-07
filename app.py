@@ -64,9 +64,13 @@ def index():
             filename = secure_filename(file.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(filepath)
-            fasta_manager.parse(filepath)
-            flash('File uploaded and parsed successfully!')
-            return redirect(url_for('summary'))
+            try:
+                fasta_manager.parse(filepath)
+                flash('File uploaded and parsed successfully!')
+                return redirect(url_for('summary'))
+            except (ValueError, FileNotFoundError) as e:
+                flash(f'Error parsing FASTA file: {e}')
+                return redirect(request.url)
         else:
             flash('Invalid file type!')
             return redirect(request.url)
@@ -83,11 +87,7 @@ def summary():
     names = fasta_manager.get_names()
     return render_template('summary.html', stats=stats, names=names, gc_contents=gc_contents, fasta_manager=fasta_manager, zip=zip)
 
-@app.route('/set_file', methods=['POST'])
-def set_file():
-    filename = request.form.get('filename')
-    fasta_manager.set_current_file(filename)
-    return redirect(url_for('summary'))
+
 
 @app.route('/motif', methods=['GET', 'POST'])
 def motif():
