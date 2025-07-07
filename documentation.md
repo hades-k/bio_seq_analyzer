@@ -26,7 +26,11 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 ---
 
-**Class:** `Sequence`
+**Class:** `Sequence`    
+
+**Superclass:**    
+
+**Subclass:** `MitochondrialDNA`
 
 **Responsibilities:** 
 - Serve as abstract base class for biological sequences
@@ -39,6 +43,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 ---
 
 **Class:** `MitochondrialDNA`
+
+**Superclass:** `Sequence`
+
+**Subclass:**
 
 **Responsibilities:**
 - Represent a single mitochondrial DNA sequence
@@ -58,6 +66,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 **Class:** `Tool`
 
+**Superclass:**    
+
+**Subclasses:** `Parser`, `SequenceAligner`, `MotifFinder`
+
 **Responsibilities:**
 - Abstract superclass for low-level sequence manipulation tools
 - Define abstract methods (run, report) to be present in all subclasses
@@ -70,6 +82,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 ----
 
 **Class:** `Parser`
+
+**Superclass:** `Tool`
+
+**Subclass:** 
 
 **Responsibilities:**
 - Parse a SeqIO supported file, default FASTA
@@ -88,6 +104,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 **Class:** `SequenceAligner`
 
+**Superclass:** `Tool`
+
+**Subclass:** 
+
 **Responsibilities:**
 - Align two biological sequences using Needleman-Wunsch (global) or Smith-Waterman (local) algorithms
 - Calculate the alignment score
@@ -105,6 +125,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 **Class:** `MotifFinder`
 
+**Superclass:** `Tool`
+
+**Subclass:** 
+
 **Responsibilities:**
 - Search for a given motif in a DNA sequence and return its positions
 - Discover overrepresented k-mers (motifs) in a sequence above a frequency threshold
@@ -117,6 +141,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 ----
 
 **Class:** `FastaManager`
+
+**Superclass:**    
+
+**Subclass:** 
 
 **Responsibilities:**
 - Load and manage multiple FASTA datasets, each containing `MitochondrialDNA` objects
@@ -131,6 +159,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 **Class:** `SequenceAlignWrapper`
 
+**Superclass:**    
+
+**Subclass:** 
+
 **Responsibilities:**
 - Wrap `SequenceAligner` to simplify usage and expose a cleaner interface
 - Perform alignment and return alignment data.
@@ -143,6 +175,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 
 **Class:** `AlignmentVisualizer`
 
+**Superclass:**    
+
+**Subclass:** 
+
 **Responsibilities:**
 - Display pairwise alignment between sequences in a formatted, readable layout
 - Show alignment symbols, score, matches/mismatches/gaps
@@ -154,6 +190,10 @@ This software models mitochondrial DNA using a modular and extensible object-ori
 ----
 
 **Class:** `SequenceComparer`
+
+**Superclass:**    
+
+**Subclass:** 
 
 **Responsibilities:**
 - Compare all sequence pairs (or each to a reference) using alignments
